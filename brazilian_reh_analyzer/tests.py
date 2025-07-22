@@ -62,7 +62,7 @@ class REHTests:
                 "beta_pvalue": float(model.pvalues["forecast"]),
                 "alpha_stderr": float(model.bse["const"]),
                 "beta_stderr": float(model.bse["forecast"]),
-                "joint_test_fstat": float(joint_test.fvalue[0][0]),
+                "joint_test_fstat": float(joint_test.fvalue),
                 "joint_test_pvalue": float(joint_test.pvalue),
                 "r_squared": float(model.rsquared),
                 "adj_r_squared": float(model.rsquared_adj),
@@ -230,10 +230,11 @@ class REHTests:
                 return {"error": "No valid external variables for testing"}
             
             # Joint significance test
-            f_test = model.f_test(f"[{' = 0, '.join(var_names)} = 0]")
+            constraints = ', '.join([f"{var} = 0" for var in var_names])
+            f_test = model.f_test(constraints)
             
             results = {
-                "f_statistic": float(f_test.fvalue[0][0]) if f_test.fvalue.size > 0 else np.nan,
+                "f_statistic": float(f_test.fvalue) if hasattr(f_test, 'fvalue') else np.nan,
                 "f_pvalue": float(f_test.pvalue) if hasattr(f_test, 'pvalue') else np.nan,
                 "r_squared": float(model.rsquared),
                 "n_observations": len(combined_data),

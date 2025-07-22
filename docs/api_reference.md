@@ -1,10 +1,12 @@
-# Brazilian REH Analyzer - API Reference
+# Brazilian REH Analyzer v2.0.0 - API Reference
+
+**🆕 Enhanced Academic Framework with LaTeX Export and Professional Visualizations**
 
 ## Table of Contents
 1. [BrazilianREHAnalyzer](#brazilianrehanalyzer)
-2. [Data Fetching Components](#data-fetching-components)
-3. [Statistical Tests](#statistical-tests)
-4. [Visualizations](#visualizations)
+2. [Enhanced Visualizations (v2.0.0)](#enhanced-visualizations-v200)
+3. [Data Fetching Components](#data-fetching-components)
+4. [Statistical Tests](#statistical-tests)
 5. [Utility Functions](#utility-functions)
 
 ## BrazilianREHAnalyzer
@@ -105,9 +107,14 @@ Run complete enhanced analysis with real Brazilian data.
 **Returns:**
 - `Dict`: Comprehensive analysis results containing:
   - `descriptive_stats`: Basic statistical measures
+  - `rich_descriptive_stats`: **🆕 v2.0.0** Enhanced statistics with skewness, kurtosis, quartiles
   - `mincer_zarnowitz`: MZ regression test results
+  - `detailed_mincer_zarnowitz`: **🆕 v2.0.0** Full regression diagnostics with confidence intervals
   - `autocorrelation`: Ljung-Box test results
   - `bias_test`: Holden-Peel bias test results
+  - `sub_period_analysis`: **🆕 v2.0.0** Structural break detection and sub-period analysis
+  - `rolling_window_analysis`: **🆕 v2.0.0** Time-varying bias pattern detection
+  - `economic_interpretation`: **🆕 v2.0.0** Automated economic analysis with policy implications
   - `rationality_assessment`: Overall rationality verdict
 
 **Example:**
@@ -158,9 +165,48 @@ Export all diagnostic plots to individual files.
 - `output_dir` (str): Directory to save plots
 - `dpi` (int): Resolution for saved plots
 
+**🆕 v2.0.0 Enhanced Features:**
+- Professional academic color scheme (colorblind-friendly)
+- ACF/PACF autocorrelation analysis plots
+- Q-Q plots with confidence bands  
+- Enhanced Mincer-Zarnowitz plots with confidence intervals
+
 **Example:**
 ```python
 analyzer.export_plots(output_dir="publication_plots", dpi=600)
+```
+
+##### `export_latex_report(output_file: str, title: str, author: str) -> str` **🆕 NEW v2.0.0**
+
+Export comprehensive analysis results in professional LaTeX format for academic publication.
+
+**Parameters:**
+- `output_file` (str): Output LaTeX file path
+- `title` (str): Document title for the report  
+- `author` (str): Document author name
+
+**Returns:**
+- `str`: Path to generated LaTeX file
+
+**Features:**
+- Professional academic document structure with proper sections
+- Mathematical equations in LaTeX format (Mincer-Zarnowitz regression)
+- Publication-ready tables with booktabs styling
+- Colored status indicators for test results
+- Executive summary with key findings
+- Ready for PDF compilation
+
+**Example:**
+```python
+latex_file = analyzer.export_latex_report(
+    "reports/brazilian_reh_analysis.tex",
+    "Assessment of Brazilian Focus Bulletin Rationality (2017-2024)", 
+    "Research Team Name"
+)
+
+# Compile to PDF (requires LaTeX installation):
+# pdflatex brazilian_reh_analysis.tex
+# pdflatex brazilian_reh_analysis.tex  # Run twice for references
 ```
 
 ##### `save_data(filename: str = "aligned_data.csv") -> None`
@@ -176,6 +222,60 @@ Load previously saved aligned data from CSV.
 
 **Parameters:**
 - `filename` (str): Input CSV filename
+
+## Enhanced Visualizations (v2.0.0)
+
+### Class: `REHVisualizations` **🆕 Enhanced Academic Framework**
+
+Professional publication-quality visualizations with academic styling and advanced diagnostic capabilities.
+
+#### New Static Methods (v2.0.0)
+
+##### `setup_academic_style() -> None` **🆕 NEW**
+
+Configure matplotlib with professional academic styling for publication-quality plots.
+
+**Features:**
+- Colorblind-friendly academic color palette
+- Professional serif fonts (Times New Roman family)
+- Journal-standard figure sizing and DPI settings
+- Publication-ready grid and axis styling
+
+##### `plot_acf_pacf_analysis(forecast_errors: pd.Series, max_lags: int = 24) -> plt.Figure` **🆕 NEW**
+
+Create comprehensive ACF/PACF autocorrelation analysis plots (replaces basic summary table).
+
+**Parameters:**
+- `forecast_errors` (pd.Series): Forecast error time series
+- `max_lags` (int): Maximum number of lags for analysis
+
+**Features:**
+- Theoretical confidence bands (±1.96/√n)
+- Automatic significance detection and interpretation
+- Professional academic styling with color-coded significance levels
+
+##### `plot_qq_normality(forecast_errors: pd.Series) -> plt.Figure` **🆕 Enhanced**
+
+Create enhanced Q-Q plots for normality assessment with confidence bands.
+
+**🆕 v2.0.0 Enhancements:**
+- 95% confidence bands using order statistics  
+- Multiple normality test results (Shapiro-Wilk, Jarque-Bera)
+- Professional academic styling and statistical interpretation
+
+### Enhanced Color Palette (v2.0.0)
+
+The v2.0.0 framework includes a professional, colorblind-friendly academic palette:
+
+```python
+ACADEMIC_COLORS = {
+    'primary': '#2E86AB',      # Professional blue
+    'secondary': '#A23B72',    # Burgundy accent  
+    'error': '#F18F01',        # Warning orange
+    'success': '#C73E1D',      # Dark red
+    'neutral': '#6B7280'       # Professional gray
+}
+```
 
 ## Data Fetching Components
 
