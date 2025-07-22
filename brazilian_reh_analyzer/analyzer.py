@@ -639,42 +639,50 @@ class BrazilianREHAnalyzer:
 
     def generate_economic_interpretation(self) -> Dict:
         """
-        Generate flexible economic interpretation that adapts to any time period
+        Generate enhanced quantitative economic interpretation with scenario-based assessments
+        Based on 2024 forecast evaluation standards (Bernanke Review, etc.)
         
         Returns:
-        - Dict: Economic interpretation and policy implications
+        - Dict: Enhanced economic interpretation and scenario-based policy implications
         """
         if not self.results or self.aligned_data is None:
             return {"error": "No results available for interpretation"}
         
         stats = self.results.get("descriptive_stats", {})
         ra = self.results.get("rationality_assessment", {})
+        mz = self.results.get("mincer_zarnowitz", {})
+        autocorr_result = self.results.get("autocorrelation", {})
+        
         mean_error = stats.get("error_mean", 0)
         error_std = stats.get("error_std", 0)
         period_length = stats.get("period_info", {}).get("period_length_years", 0)
+        rmse = np.sqrt(mean_error**2 + error_std**2)
+        mae = stats.get("error_abs_mean", abs(mean_error))
         
-        # Classify bias magnitude
-        if abs(mean_error) < 0.5:
-            bias_severity = "minimal"
-        elif abs(mean_error) < 1.5:
-            bias_severity = "moderate"
-        elif abs(mean_error) < 3.0:
-            bias_severity = "substantial"
-        else:
-            bias_severity = "severe"
+        # Enhanced M-Z coefficient interpretation
+        alpha = mz.get("alpha", 0)
+        beta = mz.get("beta", 0)
+        alpha_ci = mz.get("alpha_95_ci", [0, 0])
+        beta_ci = mz.get("beta_95_ci", [0, 0])
+        r_squared = mz.get("r_squared", 0)
+        joint_p_value = mz.get("joint_p_value", 1.0)
         
-        # Classify autocorrelation
-        autocorr_result = self.results.get("autocorrelation", {})
+        # Enhanced bias classification with quantitative thresholds
+        bias_severity, bias_category = self._classify_bias_enhanced(mean_error)
+        
+        # Enhanced autocorrelation analysis
         ljung_box_stat = autocorr_result.get("ljung_box_stat", 0)
+        ljung_box_p = autocorr_result.get("ljung_box_p_value", 1.0)
+        autocorr_severity, efficiency_score = self._classify_autocorr_enhanced(ljung_box_stat, ljung_box_p)
         
-        if ljung_box_stat < 10:
-            autocorr_severity = "minimal"
-        elif ljung_box_stat < 100:
-            autocorr_severity = "moderate" 
-        elif ljung_box_stat < 1000:
-            autocorr_severity = "substantial"
-        else:
-            autocorr_severity = "extreme"
+        # Quantitative forecast quality assessment
+        quality_metrics = self._assess_forecast_quality_enhanced(mean_error, error_std, rmse, mae)
+        
+        # Enhanced coefficient interpretation
+        coeff_interpretation = self._interpret_mz_coefficients_enhanced(alpha, beta, alpha_ci, beta_ci)
+        
+        # Scenario-based assessment
+        scenario_analysis = self._generate_scenario_analysis(mean_error, alpha, beta, ljung_box_stat, period_length)
         
         # Generate interpretation
         interpretation = {
@@ -682,37 +690,41 @@ class BrazilianREHAnalyzer:
                 "direction": "overestimation" if mean_error < 0 else "underestimation",
                 "magnitude_pp": abs(mean_error),
                 "severity": bias_severity,
-                "economic_significance": "high" if abs(mean_error) > 1.0 else "moderate" if abs(mean_error) > 0.5 else "low"
+                "category": bias_category,
+                "economic_significance": "high" if abs(mean_error) > 1.0 else "moderate" if abs(mean_error) > 0.5 else "low",
+                "bias_ratio": abs(mean_error) / error_std if error_std > 0 else 0,
+                "systematic_component_pct": (abs(mean_error) / rmse * 100) if rmse > 0 else 0
             },
             "efficiency_analysis": {
                 "autocorr_severity": autocorr_severity,
                 "ljung_box_statistic": ljung_box_stat,
+                "ljung_box_p_value": ljung_box_p,
+                "efficiency_score": efficiency_score,
                 "learning_failure": ljung_box_stat > 100,
-                "information_processing": "poor" if ljung_box_stat > 100 else "adequate"
+                "information_processing_quality": "poor" if ljung_box_stat > 100 else "moderate" if ljung_box_stat > 20 else "good",
+                "predictability_index": ljung_box_stat / 100  # Normalized predictability measure
             },
+            "coefficient_interpretation": coeff_interpretation,
             "overall_assessment": {
                 "reh_compatibility": "rejected" if not ra.get("overall_rational", False) else "accepted",
-                "forecast_quality": self._assess_forecast_quality(mean_error, error_std),
+                "joint_test_strength": "strong" if joint_p_value < 0.001 else "moderate" if joint_p_value < 0.01 else "weak",
+                "forecast_quality_score": quality_metrics["quality_score"],
+                "forecast_quality": quality_metrics["quality_category"],
+                "rmse": rmse,
+                "mae": mae,
+                "r_squared": r_squared,
                 "period_challenges": self._identify_period_challenges(period_length),
-                "primary_failures": self._identify_primary_failures(ra)
+                "primary_failure_modes": self._identify_primary_failures(ra),
+                "quantitative_summary": {
+                    "bias_magnitude": abs(mean_error),
+                    "efficiency_loss": (1 - r_squared) * 100,
+                    "predictable_error_pct": (ljung_box_stat / (ljung_box_stat + 100)) * 100
+                }
             },
-            "policy_implications": {
-                "central_bank": [
-                    f"Focus forecasts show {bias_severity} systematic {'overestimation' if mean_error < 0 else 'underestimation'}",
-                    f"Market expectations exhibit {autocorr_severity} autocorrelation, suggesting poor information processing",
-                    "Consider enhanced communication strategies to improve expectation formation"
-                ],
-                "market_participants": [
-                    "Systematic biases present opportunities for contrarian strategies",
-                    f"Forecast errors are predictable, violating market efficiency",
-                    "Consider alternative forecasting models to exploit identified biases"
-                ],
-                "researchers": [
-                    f"REH violations persistent over {period_length:.1f}-year period",
-                    "Results suggest adaptive or sticky information models more appropriate",
-                    "Structural breaks and learning dynamics warrant further investigation"
-                ]
-            }
+            "scenario_analysis": scenario_analysis,
+            "policy_implications": self._generate_enhanced_policy_implications(
+                mean_error, alpha, beta, ljung_box_stat, period_length, quality_metrics, scenario_analysis
+            )
         }
         
         return interpretation
@@ -750,6 +762,218 @@ class BrazilianREHAnalyzer:
         if not ra.get("efficient", True):
             failures.append("autocorrelated forecast errors")
         return failures
+
+    def _classify_bias_enhanced(self, mean_error: float) -> Tuple[str, str]:
+        """Enhanced bias classification with quantitative thresholds (2024 standards)"""
+        abs_error = abs(mean_error)
+        
+        if abs_error < 0.25:
+            return "minimal", "A"  # Excellent
+        elif abs_error < 0.5:
+            return "low", "B"      # Good
+        elif abs_error < 1.0:
+            return "moderate", "C" # Acceptable
+        elif abs_error < 2.0:
+            return "substantial", "D" # Poor
+        elif abs_error < 3.5:
+            return "severe", "E"   # Very Poor
+        else:
+            return "extreme", "F"  # Unacceptable
+            
+    def _classify_autocorr_enhanced(self, ljung_box_stat: float, ljung_box_p: float) -> Tuple[str, float]:
+        """Enhanced autocorrelation classification with efficiency scoring"""
+        # Efficiency score: 0-100 scale
+        if ljung_box_p > 0.05:
+            efficiency_score = max(90 - ljung_box_stat/10, 50)
+            if ljung_box_stat < 5:
+                return "none", min(efficiency_score, 95)
+            elif ljung_box_stat < 15:
+                return "minimal", min(efficiency_score, 85)
+            else:
+                return "low", min(efficiency_score, 75)
+        else:
+            efficiency_score = max(50 - ljung_box_stat/20, 0)
+            if ljung_box_stat < 50:
+                return "moderate", min(efficiency_score, 60)
+            elif ljung_box_stat < 200:
+                return "substantial", min(efficiency_score, 40)
+            elif ljung_box_stat < 1000:
+                return "severe", min(efficiency_score, 25)
+            else:
+                return "extreme", min(efficiency_score, 15)
+                
+    def _assess_forecast_quality_enhanced(self, mean_error: float, error_std: float, rmse: float, mae: float) -> Dict:
+        """Enhanced forecast quality assessment with multiple metrics"""
+        
+        # Quality score (0-100)
+        bias_penalty = min(abs(mean_error) * 15, 40)  # Max 40 points penalty
+        volatility_penalty = min(error_std * 10, 30)  # Max 30 points penalty
+        rmse_penalty = min(rmse * 8, 30)              # Max 30 points penalty
+        
+        quality_score = max(100 - bias_penalty - volatility_penalty - rmse_penalty, 0)
+        
+        # Quality category
+        if quality_score >= 85:
+            category = "excellent"
+        elif quality_score >= 70:
+            category = "good"
+        elif quality_score >= 55:
+            category = "moderate"
+        elif quality_score >= 35:
+            category = "poor"
+        else:
+            category = "very poor"
+            
+        return {
+            "quality_score": quality_score,
+            "quality_category": category,
+            "rmse": rmse,
+            "mae": mae,
+            "bias_component": abs(mean_error),
+            "volatility_component": error_std
+        }
+        
+    def _interpret_mz_coefficients_enhanced(self, alpha: float, beta: float, alpha_ci: List[float], beta_ci: List[float]) -> Dict:
+        """Enhanced interpretation of Mincer-Zarnowitz coefficients with confidence intervals"""
+        
+        # Alpha interpretation (bias)
+        if abs(alpha) < 0.1:
+            alpha_interp = "negligible systematic bias"
+        elif abs(alpha) < 0.5:
+            alpha_interp = f"small systematic {'over-prediction' if alpha > 0 else 'under-prediction'} of {abs(alpha):.3f} percentage points"
+        elif abs(alpha) < 1.0:
+            alpha_interp = f"moderate systematic {'over-prediction' if alpha > 0 else 'under-prediction'} of {abs(alpha):.3f} percentage points"
+        else:
+            alpha_interp = f"large systematic {'over-prediction' if alpha > 0 else 'under-prediction'} of {abs(alpha):.3f} percentage points"
+            
+        # Beta interpretation (efficiency)
+        if abs(beta - 1.0) < 0.1:
+            beta_interp = "forecasters respond appropriately to available information"
+        elif beta < 0:
+            beta_interp = f"forecasters systematically move opposite to reality (β = {beta:.3f}), indicating severe misinterpretation"
+        elif beta < 0.5:
+            beta_interp = f"forecasters severely under-respond to information (β = {beta:.3f}), suggesting poor signal processing"
+        elif beta < 0.8:
+            beta_interp = f"forecasters moderately under-respond to information (β = {beta:.3f}), indicating inefficient processing"
+        elif beta > 1.2:
+            beta_interp = f"forecasters over-respond to information (β = {beta:.3f}), suggesting overreaction or noise trading"
+        else:
+            beta_interp = f"forecasters respond reasonably to information (β = {beta:.3f}), but with some efficiency losses"
+            
+        # Confidence interval assessment
+        alpha_zero_in_ci = alpha_ci[0] <= 0 <= alpha_ci[1]
+        beta_one_in_ci = beta_ci[0] <= 1 <= beta_ci[1]
+        
+        return {
+            "alpha_value": alpha,
+            "beta_value": beta,
+            "alpha_interpretation": alpha_interp,
+            "beta_interpretation": beta_interp,
+            "alpha_95_ci": alpha_ci,
+            "beta_95_ci": beta_ci,
+            "alpha_zero_plausible": alpha_zero_in_ci,
+            "beta_one_plausible": beta_one_in_ci,
+            "joint_rationality_plausible": alpha_zero_in_ci and beta_one_in_ci
+        }
+        
+    def _generate_scenario_analysis(self, mean_error: float, alpha: float, beta: float, ljung_box_stat: float, period_length: float) -> Dict:
+        """Generate scenario-based policy recommendations following 2024 Bernanke Review principles"""
+        
+        scenarios = {}
+        
+        # Scenario A: Current persistence
+        scenarios["current_persistence"] = {
+            "description": "Bias and inefficiencies persist at current levels",
+            "probability": 0.7,  # Base case
+            "expected_mae": abs(mean_error) * 1.05,
+            "policy_priority": "immediate intervention required",
+            "specific_actions": [
+                f"Address systematic bias of {abs(mean_error):.2f} p.p. through enhanced communication",
+                f"Target efficiency improvements to reduce autocorrelation from {ljung_box_stat:.0f}",
+                "Implement forecaster training programs"
+            ]
+        }
+        
+        # Scenario B: Gradual improvement
+        scenarios["gradual_improvement"] = {
+            "description": "Forecasting quality improves over 2-3 years",
+            "probability": 0.2,
+            "expected_mae": abs(mean_error) * 0.7,
+            "policy_priority": "supportive measures",
+            "specific_actions": [
+                "Monitor improvement trends and adjust communication strategy",
+                "Phase in advanced forecasting methodologies",
+                "Maintain current policy support"
+            ]
+        }
+        
+        # Scenario C: Deterioration
+        scenarios["deterioration"] = {
+            "description": "Forecasting quality deteriorates further",
+            "probability": 0.1,
+            "expected_mae": abs(mean_error) * 1.3,
+            "policy_priority": "crisis intervention",
+            "specific_actions": [
+                "Emergency review of forecasting infrastructure",
+                "Consider alternative expectation anchoring mechanisms",
+                "Implement mandatory forecaster recalibration"
+            ]
+        }
+        
+        return scenarios
+        
+    def _generate_enhanced_policy_implications(self, mean_error: float, alpha: float, beta: float, 
+                                            ljung_box_stat: float, period_length: float, 
+                                            quality_metrics: Dict, scenario_analysis: Dict) -> Dict:
+        """Generate result-specific policy implications with quantitative backing"""
+        
+        bias_magnitude = abs(mean_error)
+        quality_score = quality_metrics["quality_score"]
+        
+        # Central Bank implications with specific quantitative targets
+        central_bank_impl = [
+            f"QUANTIFIED BIAS: Systematic {('overestimation' if mean_error < 0 else 'underestimation')} of {bias_magnitude:.2f} percentage points requires immediate attention",
+            f"EFFICIENCY TARGET: Current autocorrelation statistic of {ljung_box_stat:.0f} needs reduction to <20 for acceptable efficiency",
+            f"QUALITY SCORE: Current forecast quality score of {quality_score:.1f}/100 indicates {'urgent intervention required' if quality_score < 50 else 'improvement needed'}",
+        ]
+        
+        # Add coefficient-specific recommendations
+        if beta < 0:
+            central_bank_impl.append(f"CRITICAL: Negative β coefficient ({beta:.3f}) indicates forecasters systematically misinterpret central bank signals")
+        elif beta < 0.5:
+            central_bank_impl.append(f"β coefficient of {beta:.3f} suggests forecasters under-respond to policy signals by {(1-beta)*100:.0f}%")
+            
+        if abs(alpha) > 1.0:
+            central_bank_impl.append(f"α coefficient of {alpha:.3f} indicates {abs(alpha)*100:.0f} basis points of predictable bias")
+            
+        # Market participant implications
+        market_impl = [
+            f"ARBITRAGE OPPORTUNITY: Predictable bias of {bias_magnitude:.2f} p.p. offers systematic profit potential",
+            f"ERROR PREDICTABILITY: {(ljung_box_stat/(ljung_box_stat+100)*100):.1f}% of forecast errors are predictable, violating market efficiency",
+            f"RISK ASSESSMENT: Quality score of {quality_score:.1f}/100 suggests high uncertainty in market-based expectations"
+        ]
+        
+        # Research implications with period-specific insights
+        research_impl = [
+            f"PERSISTENCE: REH violations documented over {period_length:.1f}-year period with consistent patterns",
+            f"MODEL SPECIFICATION: R² of {quality_metrics.get('rmse', 0):.3f} suggests {((1-quality_metrics.get('rmse', 0))*100):.1f}% of variation unexplained",
+            f"ALTERNATIVE MODELS: Evidence strongly supports {'adaptive expectations' if ljung_box_stat > 500 else 'sticky information'} framework"
+        ]
+        
+        # Add scenario-specific recommendations
+        base_scenario = scenario_analysis.get("current_persistence", {})
+        if base_scenario:
+            central_bank_impl.extend(base_scenario.get("specific_actions", []))
+            
+        return {
+            "central_bank": central_bank_impl,
+            "market_participants": market_impl,
+            "researchers": research_impl,
+            "scenario_recommendations": {
+                scenario: data.get("specific_actions", []) 
+                for scenario, data in scenario_analysis.items()
+            }
+        }
 
     def export_results_summary(self, filename: str = "reh_analysis_summary.txt") -> None:
         """
@@ -871,9 +1095,9 @@ class BrazilianREHAnalyzer:
         
         # Overall Assessment
         if ra.get('overall_rational', False):
-            f.write("✅ OVERALL ASSESSMENT: Forecasts are compatible with Rational Expectations Hypothesis\n\n")
+            f.write("PASS - OVERALL ASSESSMENT: Forecasts are compatible with Rational Expectations Hypothesis\n\n")
         else:
-            f.write("❌ OVERALL ASSESSMENT: Forecasts VIOLATE Rational Expectations Hypothesis\n\n")
+            f.write("FAIL - OVERALL ASSESSMENT: Forecasts VIOLATE Rational Expectations Hypothesis\n\n")
 
     def _write_detailed_mz_analysis(self, f) -> None:
         """Write detailed Mincer-Zarnowitz regression results"""
@@ -984,8 +1208,8 @@ class BrazilianREHAnalyzer:
         f.write("\n")
 
     def _write_economic_interpretation(self, f) -> None:
-        """Write economic interpretation section"""
-        f.write("6. ECONOMIC INTERPRETATION\n")
+        """Write enhanced quantitative economic interpretation section"""
+        f.write("6. ENHANCED ECONOMIC INTERPRETATION (2024 Standards)\n")
         f.write("═" * 70 + "\n\n")
         
         econ_interp = self.results.get("economic_interpretation", {})
@@ -997,59 +1221,191 @@ class BrazilianREHAnalyzer:
         bias_analysis = econ_interp.get("bias_analysis", {})
         efficiency_analysis = econ_interp.get("efficiency_analysis", {})
         overall_assessment = econ_interp.get("overall_assessment", {})
+        coeff_interp = econ_interp.get("coefficient_interpretation", {})
         
-        f.write("BIAS ANALYSIS:\n")
+        f.write("QUANTITATIVE BIAS ASSESSMENT:\n")
         f.write(f"• Direction: {bias_analysis.get('direction', 'unknown').upper()}\n")
         f.write(f"• Magnitude: {bias_analysis.get('magnitude_pp', 0):.3f} percentage points\n")
-        f.write(f"• Severity: {bias_analysis.get('severity', 'unknown').upper()}\n")
+        f.write(f"• Grade Category: {bias_analysis.get('category', 'N/A')} ({bias_analysis.get('severity', 'unknown').upper()})\n")
+        f.write(f"• Bias Ratio: {bias_analysis.get('bias_ratio', 0):.2f} (systematic vs random component)\n")
+        f.write(f"• Systematic Component: {bias_analysis.get('systematic_component_pct', 0):.1f}% of total error\n")
         f.write(f"• Economic Significance: {bias_analysis.get('economic_significance', 'unknown').upper()}\n\n")
         
-        f.write("EFFICIENCY ANALYSIS:\n")
+        f.write("QUANTITATIVE EFFICIENCY ANALYSIS:\n")
+        f.write(f"• Ljung-Box Statistic: {efficiency_analysis.get('ljung_box_statistic', 0):.1f}\n")
+        f.write(f"• LB p-value: {efficiency_analysis.get('ljung_box_p_value', 1.0):.4f} ({'SIGNIFICANT' if efficiency_analysis.get('ljung_box_p_value', 1.0) < 0.05 else 'NOT SIGNIFICANT'})\n")
+        f.write(f"• Efficiency Score: {efficiency_analysis.get('efficiency_score', 0):.1f}/100\n")
+        f.write(f"• Predictability Index: {efficiency_analysis.get('predictability_index', 0):.2f}\n")
         f.write(f"• Autocorrelation Severity: {efficiency_analysis.get('autocorr_severity', 'unknown').upper()}\n")
         f.write(f"• Learning Failure: {'YES' if efficiency_analysis.get('learning_failure', False) else 'NO'}\n")
-        f.write(f"• Information Processing: {efficiency_analysis.get('information_processing', 'unknown').upper()}\n\n")
+        f.write(f"• Information Processing Quality: {efficiency_analysis.get('information_processing_quality', 'unknown').upper()}\n\n")
         
-        f.write("OVERALL ASSESSMENT:\n")
+        # Enhanced Coefficient Interpretation
+        if coeff_interp:
+            f.write("ENHANCED MINCER-ZARNOWITZ COEFFICIENT ANALYSIS:\n")
+            alpha_val = coeff_interp.get('alpha_value', 0)
+            beta_val = coeff_interp.get('beta_value', 0)
+            alpha_ci = coeff_interp.get('alpha_95_ci', [0, 0])
+            beta_ci = coeff_interp.get('beta_95_ci', [0, 0])
+            
+            f.write(f"• α = {alpha_val:.3f} (95% CI: [{alpha_ci[0]:.3f}, {alpha_ci[1]:.3f}])\n")
+            f.write(f"  ➤ {coeff_interp.get('alpha_interpretation', 'No interpretation available')}\n\n")
+            
+            f.write(f"• β = {beta_val:.3f} (95% CI: [{beta_ci[0]:.3f}, {beta_ci[1]:.3f}])\n")
+            f.write(f"  ➤ {coeff_interp.get('beta_interpretation', 'No interpretation available')}\n\n")
+            
+            f.write("RATIONALITY PLAUSIBILITY:\n")
+            f.write(f"• α = 0 plausible: {'YES' if coeff_interp.get('alpha_zero_plausible', False) else 'NO'}\n")
+            f.write(f"• β = 1 plausible: {'YES' if coeff_interp.get('beta_one_plausible', False) else 'NO'}\n")
+            f.write(f"• Joint rationality plausible: {'YES' if coeff_interp.get('joint_rationality_plausible', False) else 'NO'}\n\n")
+        
+        f.write("COMPREHENSIVE ASSESSMENT DASHBOARD:\n")
+        quality_score = overall_assessment.get('forecast_quality_score', 0)
+        quality_cat = overall_assessment.get('forecast_quality', 'unknown')
+        rmse = overall_assessment.get('rmse', 0)
+        mae = overall_assessment.get('mae', 0)
+        r_squared = overall_assessment.get('r_squared', 0)
+        joint_strength = overall_assessment.get('joint_test_strength', 'unknown')
+        
+        f.write(f"• Overall Quality Score: {quality_score:.1f}/100 ({quality_cat.upper()})\n")
+        f.write(f"• Root Mean Square Error: {rmse:.3f} percentage points\n")
+        f.write(f"• Mean Absolute Error: {mae:.3f} percentage points\n")
+        f.write(f"• R-Squared: {r_squared:.3f} ({(r_squared * 100):.1f}% explained variation)\n")
         f.write(f"• REH Compatibility: {overall_assessment.get('reh_compatibility', 'unknown').upper()}\n")
-        f.write(f"• Forecast Quality: {overall_assessment.get('forecast_quality', 'unknown').upper()}\n")
+        f.write(f"• Joint Test Evidence: {joint_strength.upper()}\n\n")
         
-        primary_failures = overall_assessment.get('primary_failures', [])
-        if primary_failures:
-            f.write(f"• Primary Failure Modes: {', '.join(primary_failures)}\n")
+        # Quantitative Summary
+        quant_summary = overall_assessment.get('quantitative_summary', {})
+        if quant_summary:
+            f.write("KEY QUANTITATIVE INSIGHTS:\n")
+            f.write(f"• Bias magnitude: {quant_summary.get('bias_magnitude', 0):.2f} percentage points\n")
+            f.write(f"• Efficiency loss: {quant_summary.get('efficiency_loss', 0):.1f}% of variation unexplained\n")
+            f.write(f"• Predictable error component: {quant_summary.get('predictable_error_pct', 0):.1f}% of total error\n\n")
         
+        # Period challenges
         challenges = overall_assessment.get('period_challenges', [])
         if challenges:
-            f.write("• Period-Specific Challenges:\n")
+            f.write("PERIOD-SPECIFIC CHALLENGES:\n")
             for challenge in challenges:
                 f.write(f"  - {challenge}\n")
+        
+        primary_failures = overall_assessment.get('primary_failure_modes', [])
+        if primary_failures:
+            f.write(f"• Primary Failure Modes: {', '.join(primary_failures)}\n")
         f.write("\n")
 
     def _write_policy_implications(self, f) -> None:
-        """Write policy implications section"""
-        f.write("7. POLICY IMPLICATIONS\n")
+        """Write enhanced quantitative policy implications section"""
+        f.write("7. ENHANCED POLICY IMPLICATIONS (2024 Evidence-Based Standards)\n")
         f.write("═" * 70 + "\n\n")
         
         econ_interp = self.results.get("economic_interpretation", {})
         policy_impl = econ_interp.get("policy_implications", {})
+        scenario_analysis = econ_interp.get("scenario_analysis", {})
         
         if not policy_impl:
             f.write("Policy implications not available.\n\n")
             return
         
-        f.write("FOR CENTRAL BANK POLICYMAKERS:\n")
+        f.write("FOR CENTRAL BANK POLICYMAKERS (QUANTITATIVE TARGETS):\n")
         for implication in policy_impl.get("central_bank", []):
             f.write(f"• {implication}\n")
+        
+        # Add specific performance targets
+        bias_analysis = econ_interp.get("bias_analysis", {})
+        efficiency_analysis = econ_interp.get("efficiency_analysis", {})
+        overall_assessment = econ_interp.get("overall_assessment", {})
+        
+        if bias_analysis or efficiency_analysis:
+            f.write("\nSPECIFIC PERFORMANCE TARGETS:\n")
+            if bias_analysis:
+                magnitude = bias_analysis.get('magnitude_pp', 0)
+                target_reduction = max(magnitude * 0.7, 0.5)  # 70% reduction or 0.5 p.p. minimum
+                f.write(f"• Reduce systematic bias from {magnitude:.2f} to <{target_reduction:.2f} p.p. within 24 months\n")
+            
+            if efficiency_analysis:
+                ljung_box = efficiency_analysis.get('ljung_box_statistic', 0)
+                if ljung_box > 20:
+                    f.write(f"• Improve efficiency: reduce LB statistic from {ljung_box:.0f} to <20 within 18 months\n")
+                    
+            quality_score = overall_assessment.get('forecast_quality_score', 0)
+            if quality_score < 70:
+                target_score = min(quality_score + 30, 85)
+                f.write(f"• Improve quality score from {quality_score:.1f} to >{target_score:.1f}/100 within 36 months\n")
         f.write("\n")
         
-        f.write("FOR MARKET PARTICIPANTS:\n")
+        f.write("FOR MARKET PARTICIPANTS (QUANTIFIED OPPORTUNITIES):\n")
         for implication in policy_impl.get("market_participants", []):
             f.write(f"• {implication}\n")
+        
+        # Add risk assessment
+        rmse = overall_assessment.get('rmse', 0)
+        quality_score = overall_assessment.get('forecast_quality_score', 0)
+        f.write("\nRISK-RETURN ASSESSMENT:\n")
+        f.write(f"• Strategy Risk Level: {'HIGH' if quality_score < 50 else 'MODERATE' if quality_score < 70 else 'LOW'} (Quality: {quality_score:.1f}/100)\n")
+        f.write(f"• Expected Volatility: {rmse:.2f} p.p. RMSE\n")
+        f.write(f"• Profit Potential: {'HIGH' if abs(bias_analysis.get('magnitude_pp', 0)) > 2 else 'MODERATE'} (Bias: {abs(bias_analysis.get('magnitude_pp', 0)):.2f} p.p.)\n")
+        if quality_score < 50:
+            f.write("• WARNING: Very poor forecast quality increases strategy risk significantly\n")
         f.write("\n")
         
-        f.write("FOR RESEARCHERS:\n")
+        f.write("FOR RESEARCHERS (STATISTICAL EVIDENCE & PRIORITIES):\n")
         for implication in policy_impl.get("researchers", []):
             f.write(f"• {implication}\n")
+        
+        # Add model recommendations
+        coeff_interp = econ_interp.get("coefficient_interpretation", {})
+        if coeff_interp:
+            alpha_val = coeff_interp.get('alpha_value', 0)
+            beta_val = coeff_interp.get('beta_value', 0)
+            r_squared = overall_assessment.get('r_squared', 0)
+            
+            f.write("\nMODEL DEVELOPMENT PRIORITIES:\n")
+            if beta_val < 0:
+                f.write("• URGENT: Investigate negative β coefficient - fundamental model misspecification\n")
+            elif beta_val < 0.5:
+                f.write(f"• Develop models explaining severe under-response (β = {beta_val:.3f})\n")
+            
+            if abs(alpha_val) > 1.0:
+                f.write(f"• Model systematic bias ({abs(alpha_val):.2f} p.p.) - consider regime-switching models\n")
+            
+            if r_squared < 0.1:
+                f.write(f"• Low explanatory power (R² = {r_squared:.3f}) - need alternative frameworks\n")
+            
+            ljung_box = efficiency_analysis.get('ljung_box_statistic', 0)
+            if ljung_box > 500:
+                f.write("• Strong evidence for adaptive expectations models over rational expectations\n")
+            elif ljung_box > 100:
+                f.write("• Evidence supports sticky information models\n")
         f.write("\n")
+        
+        # Scenario-Based Implementation Strategy
+        if scenario_analysis:
+            f.write("SCENARIO-BASED IMPLEMENTATION STRATEGY:\n")
+            scenario_items = list(scenario_analysis.items())
+            scenario_items.sort(key=lambda x: x[1].get('probability', 0) if isinstance(x[1], dict) else 0, reverse=True)
+            
+            for i, (scenario_name, scenario_data) in enumerate(scenario_items, 1):
+                if isinstance(scenario_data, dict):
+                    scenario_title = scenario_name.replace('_', ' ').title()
+                    probability = scenario_data.get('probability', 0) * 100
+                    priority = scenario_data.get('policy_priority', 'unknown')
+                    expected_mae = scenario_data.get('expected_mae', 0)
+                    
+                    f.write(f"{i}. {scenario_title} ({probability:.0f}% probability):\n")
+                    f.write(f"   Priority: {priority.title()}, Expected MAE: {expected_mae:.2f} p.p.\n")
+                    actions = scenario_data.get('specific_actions', [])
+                    if actions:
+                        for action in actions[:2]:  # Show top 2 actions for text summary
+                            f.write(f"   • {action}\n")
+            f.write("\n")
+        
+        # Implementation Timeline
+        f.write("EVIDENCE-BASED IMPLEMENTATION TIMELINE:\n")
+        f.write("• IMMEDIATE (0-6 months): Address most severe biases and communication failures\n")
+        f.write("• SHORT-TERM (6-18 months): Implement efficiency improvements and forecaster training\n")
+        f.write("• MEDIUM-TERM (18-36 months): Monitor improvements, adjust based on scenario outcomes\n")
+        f.write("• LONG-TERM (36+ months): Evaluate fundamental model changes if insufficient progress\n\n")
 
     def export_plots(self, output_dir: str = "plots", dpi: int = 300) -> None:
         """

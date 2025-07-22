@@ -370,9 +370,9 @@ class REHVisualizations:
         # Add test statistics with academic styling
         test_text = f"Normality Tests:\nShapiro-Wilk: p={shapiro_p:.4f}\nJarque-Bera: p={jarque_p:.4f}"
         if shapiro_p < 0.05 or jarque_p < 0.05:
-            test_text += "\n⚠️ Reject normality"
+            test_text += "\nReject normality"
         else:
-            test_text += "\n✓ Normal distribution"
+            test_text += "\nNormal distribution"
         
         ax.text(
             0.72,
@@ -554,9 +554,9 @@ class REHVisualizations:
         interpretation = f"Significant ACF lags: {n_significant_acf}/{max_lags}\n"
         interpretation += f"Significant PACF lags: {n_significant_pacf}/{max_lags}\n"
         if n_significant_acf > max_lags * 0.1:  # More than 10% significant
-            interpretation += "⚠️ Strong autocorrelation detected"
+            interpretation += "Strong autocorrelation detected"
         else:
-            interpretation += "✓ Weak autocorrelation"
+            interpretation += "Weak autocorrelation"
         
         fig.suptitle(f"{title}\n{interpretation}", fontsize=12, y=0.95)
         plt.tight_layout()
@@ -626,9 +626,9 @@ class REHVisualizations:
         
         test_text = f"Shapiro-Wilk: p={shapiro_p:.4f}\nJarque-Bera: p={jarque_p:.4f}"
         if shapiro_p < 0.05 or jarque_p < 0.05:
-            test_text += "\n⚠️ Non-normal distribution"
+            test_text += "\nNon-normal distribution"
         else:
-            test_text += "\n✓ Normal distribution"
+            test_text += "\nNormal distribution"
         
         ax.text(
             0.05, 0.95, test_text,
@@ -646,10 +646,14 @@ class REHVisualizations:
         forecast: pd.Series,
         realized: pd.Series,
         results: Dict,
-        figsize: Tuple[int, int] = (18, 12)
+        figsize: Tuple[int, int] = (20, 12)
     ) -> plt.Figure:
         """
-        Create comprehensive diagnostic plot with all key visualizations
+        Create comprehensive diagnostic plot with improved layout
+        
+        Layout:
+        Row 1: Forecast vs Realized | Forecast Errors | Distribution  
+        Row 2: Rolling Stats | Q-Q Plot | ACF & PACF (stacked)
         
         Parameters:
         - forecast: Series of forecasts
@@ -666,41 +670,149 @@ class REHVisualizations:
         aligned_data = pd.DataFrame({'forecast': forecast, 'realized': realized}).dropna()
         forecast_errors = aligned_data['realized'] - aligned_data['forecast']
         
-        fig, axes = plt.subplots(2, 3, figsize=figsize)
+        # Create figure with custom GridSpec for better control
+        fig = plt.figure(figsize=figsize)
+        gs = plt.GridSpec(2, 3, figure=fig, hspace=0.35, wspace=0.25,
+                         top=0.92, bottom=0.08, left=0.06, right=0.98)
         
-        # Plot 1: Forecast vs Realization scatter
+        # Row 1: Three equal columns
+        # Plot 1: Forecast vs Realized (R1C1)
+        ax1 = fig.add_subplot(gs[0, 0])
         REHVisualizations.plot_forecast_vs_realization(
-            aligned_data['forecast'], aligned_data['realized'], ax=axes[0, 0]
+            aligned_data['forecast'], aligned_data['realized'], ax=ax1
         )
         
-        # Plot 2: Forecast errors over time
+        # Plot 2: Forecast Errors Over Time (R1C2)
+        ax2 = fig.add_subplot(gs[0, 1])
         REHVisualizations.plot_forecast_errors_timeseries(
-            forecast_errors, ax=axes[0, 1]
+            forecast_errors, ax=ax2
         )
         
-        # Plot 3: Error distribution
+        # Plot 3: Error Distribution (R1C3)
+        ax3 = fig.add_subplot(gs[0, 2])
         REHVisualizations.plot_error_distribution(
-            forecast_errors, ax=axes[0, 2]
+            forecast_errors, ax=ax3
         )
         
-        # Plot 4: Rolling statistics
+        # Row 2: Three columns
+        # Plot 4: Rolling Statistics (R2C1)
+        ax4 = fig.add_subplot(gs[1, 0])
         window = min(12, len(forecast_errors) // 3)
         REHVisualizations.plot_rolling_statistics(
-            forecast_errors, window=window, ax=axes[1, 0]
+            forecast_errors, window=window, ax=ax4
         )
         
-        # Plot 5: Q-Q plot
+        # Plot 5: Q-Q Plot (R2C2)
+        ax5 = fig.add_subplot(gs[1, 1])
         REHVisualizations.plot_qq_normality(
-            forecast_errors, ax=axes[1, 1]
+            forecast_errors, ax=ax5
         )
         
-        # Plot 6: ACF/PACF Analysis (replaces summary statistics table)
-        REHVisualizations.plot_acf_pacf_analysis(
-            forecast_errors, ax=axes[1, 2]
-        )
+        # Plot 6: ACF and PACF stacked (R2C3)
+        # Create nested GridSpec for ACF/PACF column
+        gs_acf = gs[1, 2].subgridspec(2, 1, hspace=0.4)
         
-        plt.suptitle("Brazilian REH Analyzer - Comprehensive Diagnostic Report", fontsize=16, y=0.98)
-        plt.tight_layout()
+        # ACF plot (top half of R2C3)
+        ax6a = fig.add_subplot(gs_acf[0])
+        REHVisualizations.plot_single_acf(forecast_errors, ax=ax6a, max_lags=20)
+        
+        # PACF plot (bottom half of R2C3)
+        ax6b = fig.add_subplot(gs_acf[1])
+        REHVisualizations.plot_single_pacf(forecast_errors, ax=ax6b, max_lags=20)
+        
+        plt.suptitle("Brazilian REH Analyzer - Comprehensive Diagnostic Report", 
+                    fontsize=16, fontweight='bold')
+        
+        return fig
+    
+    @staticmethod
+    def plot_single_acf(
+        forecast_errors: pd.Series,
+        ax: Optional[plt.Axes] = None,
+        max_lags: int = 20,
+        title: str = "Autocorrelation Function (ACF)"
+    ) -> plt.Figure:
+        """Create standalone ACF plot"""
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+        else:
+            fig = ax.get_figure()
+            
+        errors_clean = forecast_errors.dropna()
+        max_lags = min(max_lags, len(errors_clean) // 4)
+        
+        try:
+            from statsmodels.tsa.stattools import acf
+            
+            # Calculate ACF
+            acf_values = acf(errors_clean, nlags=max_lags, fft=True)
+            lags = np.arange(len(acf_values))
+            
+            # Confidence intervals
+            n = len(errors_clean)
+            confidence_interval = 1.96 / np.sqrt(n)
+            
+            # Plot ACF
+            ax.stem(lags, acf_values, basefmt=" ", linefmt='#1f77b4')
+            ax.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+            ax.axhline(y=confidence_interval, color='red', linestyle='--', alpha=0.7, linewidth=1)
+            ax.axhline(y=-confidence_interval, color='red', linestyle='--', alpha=0.7, linewidth=1)
+            
+            ax.set_xlabel('Lag', fontsize=10)
+            ax.set_ylabel('ACF', fontsize=10)
+            ax.set_title(title, fontsize=11, fontweight='bold')
+            ax.grid(True, alpha=0.3)
+            ax.tick_params(labelsize=9)
+            
+        except Exception as e:
+            ax.text(0.5, 0.5, f'ACF calculation failed:\n{str(e)}', 
+                   ha='center', va='center', transform=ax.transAxes)
+        
+        return fig
+    
+    @staticmethod 
+    def plot_single_pacf(
+        forecast_errors: pd.Series,
+        ax: Optional[plt.Axes] = None,
+        max_lags: int = 20,
+        title: str = "Partial Autocorrelation Function (PACF)"
+    ) -> plt.Figure:
+        """Create standalone PACF plot"""
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+        else:
+            fig = ax.get_figure()
+            
+        errors_clean = forecast_errors.dropna()
+        max_lags = min(max_lags, len(errors_clean) // 4)
+        
+        try:
+            from statsmodels.tsa.stattools import pacf
+            
+            # Calculate PACF
+            pacf_values = pacf(errors_clean, nlags=max_lags)
+            lags = np.arange(len(pacf_values))
+            
+            # Confidence intervals
+            n = len(errors_clean)
+            confidence_interval = 1.96 / np.sqrt(n)
+            
+            # Plot PACF
+            ax.stem(lags, pacf_values, basefmt=" ", linefmt='#ff7f0e')
+            ax.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+            ax.axhline(y=confidence_interval, color='red', linestyle='--', alpha=0.7, linewidth=1)
+            ax.axhline(y=-confidence_interval, color='red', linestyle='--', alpha=0.7, linewidth=1)
+            
+            ax.set_xlabel('Lag', fontsize=10)
+            ax.set_ylabel('PACF', fontsize=10)
+            ax.set_title(title, fontsize=11, fontweight='bold')
+            ax.grid(True, alpha=0.3)
+            ax.tick_params(labelsize=9)
+            
+        except Exception as e:
+            ax.text(0.5, 0.5, f'PACF calculation failed:\n{str(e)}', 
+                   ha='center', va='center', transform=ax.transAxes)
+        
         return fig
     
     @staticmethod
@@ -745,6 +857,12 @@ class REHVisualizations:
             ),
             "comprehensive_diagnostics": lambda: REHVisualizations.create_comprehensive_diagnostics(
                 aligned_data['forecast'], aligned_data['realized'], results
+            ),
+            "acf_analysis": lambda: REHVisualizations.plot_single_acf(
+                forecast_errors
+            ),
+            "pacf_analysis": lambda: REHVisualizations.plot_single_pacf(
+                forecast_errors
             )
         }
         
@@ -800,6 +918,7 @@ class REHVisualizations:
             f.write("\\usepackage{float}\n")
             f.write("\\usepackage{xcolor}\n")
             f.write("\\usepackage{hyperref}\n")
+            f.write("\\usepackage{bookmark}\n")
             f.write("\\usepackage{fancyhdr}\n")
             f.write("\n")
             f.write("\\geometry{margin=1in}\n")
@@ -1085,7 +1204,7 @@ class REHVisualizations:
     
     @staticmethod
     def _write_latex_economic_interpretation(f, results: Dict) -> None:
-        """Write LaTeX economic interpretation section"""
+        """Write enhanced LaTeX economic interpretation section with quantitative assessments"""
         f.write("\\section{Economic Interpretation}\n\n")
         
         econ_interp = results.get("economic_interpretation", {})
@@ -1097,66 +1216,246 @@ class REHVisualizations:
         bias_analysis = econ_interp.get("bias_analysis", {})
         efficiency_analysis = econ_interp.get("efficiency_analysis", {})
         overall_assessment = econ_interp.get("overall_assessment", {})
+        coeff_interp = econ_interp.get("coefficient_interpretation", {})
+        scenario_analysis = econ_interp.get("scenario_analysis", {})
         
-        # Bias Analysis
-        f.write("\\subsection{Bias Analysis}\n")
-        f.write("\\begin{description}\n")
-        f.write(f"\\item[Direction:] {bias_analysis.get('direction', 'unknown').title()}\n")
-        f.write(f"\\item[Magnitude:] {bias_analysis.get('magnitude_pp', 0):.3f} percentage points\n")  
-        f.write(f"\\item[Severity:] {bias_analysis.get('severity', 'unknown').title()}\n")
-        f.write(f"\\item[Economic Significance:] {bias_analysis.get('economic_significance', 'unknown').title()}\n")
-        f.write("\\end{description}\n\n")
+        # Enhanced Bias Analysis with Quantitative Metrics
+        f.write("\\subsection{Quantitative Bias Assessment}\n")
+        f.write("\\begin{table}[H]\n")
+        f.write("\\centering\n")
+        f.write("\\caption{Enhanced Bias Analysis}\n")
+        f.write("\\begin{tabular}{lcc}\n")
+        f.write("\\toprule\n")
+        f.write("\\textbf{Metric} & \\textbf{Value} & \\textbf{Assessment} \\\\\n")
+        f.write("\\midrule\n")
+        f.write(f"Direction & {bias_analysis.get('direction', 'unknown').title()} & -- \\\\\n")
+        f.write(f"Magnitude & {bias_analysis.get('magnitude_pp', 0):.3f} p.p. & {bias_analysis.get('severity', 'unknown').title()} \\\\\n")
+        f.write(f"Grade Category & {bias_analysis.get('category', 'N/A')} & {bias_analysis.get('economic_significance', 'unknown').title()} Impact \\\\\n")
+        f.write(f"Bias Ratio & {bias_analysis.get('bias_ratio', 0):.2f} & {'High' if bias_analysis.get('bias_ratio', 0) > 2 else 'Moderate' if bias_analysis.get('bias_ratio', 0) > 1 else 'Low'} Dominance \\\\\n")
+        f.write(f"Systematic Component & {bias_analysis.get('systematic_component_pct', 0):.1f}\\% & of Total Error \\\\\n")
+        f.write("\\bottomrule\n")
+        f.write("\\end{tabular}\n")
+        f.write("\\end{table}\n\n")
         
-        # Efficiency Analysis
-        f.write("\\subsection{Efficiency Analysis}\n")
-        f.write("\\begin{description}\n")
-        f.write(f"\\item[Autocorrelation Severity:] {efficiency_analysis.get('autocorrelation_severity', 'unknown').title()}\n")
-        f.write(f"\\item[Learning Failure:] {'Yes' if efficiency_analysis.get('learning_failure', False) else 'No'}\n")
-        f.write(f"\\item[Information Processing:] {efficiency_analysis.get('information_processing_quality', 'unknown').title()}\n")
-        f.write("\\end{description}\n\n")
+        # Enhanced Efficiency Analysis with Quantitative Metrics
+        f.write("\\subsection{Quantitative Efficiency Assessment}\n")
+        f.write("\\begin{table}[H]\n")
+        f.write("\\centering\n")
+        f.write("\\caption{Enhanced Efficiency Analysis}\n")
+        f.write("\\begin{tabular}{lcc}\n")
+        f.write("\\toprule\n")
+        f.write("\\textbf{Metric} & \\textbf{Value} & \\textbf{Assessment} \\\\\n")
+        f.write("\\midrule\n")
+        f.write(f"Ljung-Box Statistic & {efficiency_analysis.get('ljung_box_statistic', 0):.1f} & {efficiency_analysis.get('autocorr_severity', 'unknown').title()} \\\\\n")
+        f.write(f"LB p-value & {efficiency_analysis.get('ljung_box_p_value', 1.0):.4f} & {'Significant' if efficiency_analysis.get('ljung_box_p_value', 1.0) < 0.05 else 'Not Significant'} \\\\\n")
+        f.write(f"Efficiency Score & {efficiency_analysis.get('efficiency_score', 0):.1f}/100 & {'Excellent' if efficiency_analysis.get('efficiency_score', 0) > 85 else 'Good' if efficiency_analysis.get('efficiency_score', 0) > 70 else 'Poor'} \\\\\n")
+        f.write(f"Predictability Index & {efficiency_analysis.get('predictability_index', 0):.2f} & {'High' if efficiency_analysis.get('predictability_index', 0) > 5 else 'Low'} Predictability \\\\\n")
+        f.write(f"Information Processing & {efficiency_analysis.get('information_processing_quality', 'unknown').title()} & Quality Assessment \\\\\n")
+        f.write("\\bottomrule\n")
+        f.write("\\end{tabular}\n")
+        f.write("\\end{table}\n\n")
         
-        # Overall Assessment
-        f.write("\\subsection{Overall Assessment}\n")
+        # Enhanced Coefficient Interpretation
+        if coeff_interp:
+            f.write("\\subsection{Enhanced Mincer-Zarnowitz Coefficient Analysis}\n")
+            alpha_val = coeff_interp.get('alpha_value', 0)
+            beta_val = coeff_interp.get('beta_value', 0)
+            alpha_ci = coeff_interp.get('alpha_95_ci', [0, 0])
+            beta_ci = coeff_interp.get('beta_95_ci', [0, 0])
+            
+            f.write("\\textbf{Alpha Coefficient Interpretation:}\\\\\n")
+            f.write(f"$\\alpha = {alpha_val:.3f}$ (95\\% CI: [{alpha_ci[0]:.3f}, {alpha_ci[1]:.3f}])\\\\\n")
+            f.write(f"\\textit{{{coeff_interp.get('alpha_interpretation', 'No interpretation available')}}}\n\n")
+            
+            f.write("\\textbf{Beta Coefficient Interpretation:}\\\\\n")
+            f.write(f"$\\beta = {beta_val:.3f}$ (95\\% CI: [{beta_ci[0]:.3f}, {beta_ci[1]:.3f}])\\\\\n")
+            f.write(f"\\textit{{{coeff_interp.get('beta_interpretation', 'No interpretation available')}}}\n\n")
+            
+            f.write("\\textbf{Rationality Plausibility Assessment:}\\\\\n")
+            f.write(f"$\\alpha = 0$ plausible: {'Yes' if coeff_interp.get('alpha_zero_plausible', False) else 'No'}\\\\\n")
+            f.write(f"$\\beta = 1$ plausible: {'Yes' if coeff_interp.get('beta_one_plausible', False) else 'No'}\\\\\n")
+            f.write(f"Joint rationality plausible: {'Yes' if coeff_interp.get('joint_rationality_plausible', False) else 'No'}\n\n")
+        
+        # Enhanced Overall Assessment with Quality Score
+        f.write("\\subsection{Comprehensive Assessment Dashboard}\n")
+        quality_score = overall_assessment.get('forecast_quality_score', 0)
+        quality_cat = overall_assessment.get('forecast_quality', 'unknown')
+        rmse = overall_assessment.get('rmse', 0)
+        mae = overall_assessment.get('mae', 0)
+        r_squared = overall_assessment.get('r_squared', 0)
+        
+        f.write("\\begin{table}[H]\n")
+        f.write("\\centering\n")
+        f.write("\\caption{Comprehensive Quality Assessment}\n")
+        f.write("\\begin{tabular}{lcc}\n")
+        f.write("\\toprule\n")
+        f.write("\\textbf{Assessment Dimension} & \\textbf{Value} & \\textbf{Category} \\\\\n")
+        f.write("\\midrule\n")
+        f.write(f"Overall Quality Score & {quality_score:.1f}/100 & {quality_cat.title()} \\\\\n")
+        f.write(f"Root Mean Square Error & {rmse:.3f} p.p. & Accuracy Measure \\\\\n")
+        f.write(f"Mean Absolute Error & {mae:.3f} p.p. & Precision Measure \\\\\n")
+        f.write(f"R-Squared & {r_squared:.3f} & {(r_squared * 100):.1f}\\% Explained \\\\\n")
+        
         reh_compatible = overall_assessment.get('reh_compatibility', 'unknown')
-        f.write(f"\\textbf{{REH Compatibility:}} \\textcolor{{academicred}}{{{reh_compatible.upper()}}}\\\\[0.3em]\n")
-        f.write(f"\\textbf{{Forecast Quality:}} {overall_assessment.get('forecast_quality', 'unknown').title()}\\\\[0.3em]\n")
+        joint_strength = overall_assessment.get('joint_test_strength', 'unknown')
+        f.write(f"REH Compatibility & \\textcolor{{academicred}}{{{reh_compatible.upper()}}} & {joint_strength.title()} Evidence \\\\\n")
+        f.write("\\bottomrule\n")
+        f.write("\\end{tabular}\n")
+        f.write("\\end{table}\n\n")
         
-        failure_modes = overall_assessment.get('primary_failure_modes', [])
-        if failure_modes:
-            f.write("\\textbf{Primary Failure Modes:} " + ", ".join(failure_modes) + "\n\n")
+        # Scenario Analysis Section
+        if scenario_analysis:
+            f.write("\\subsection{Policy Scenario Analysis}\n")
+            f.write("Following 2024 central bank forecasting standards (Bernanke Review), we present scenario-based assessments:\n\n")
+            
+            for scenario_name, scenario_data in scenario_analysis.items():
+                if isinstance(scenario_data, dict):
+                    scenario_title = scenario_name.replace('_', ' ').title()
+                    probability = scenario_data.get('probability', 0) * 100
+                    expected_mae = scenario_data.get('expected_mae', 0)
+                    priority = scenario_data.get('policy_priority', 'unknown')
+                    
+                    f.write(f"\\textbf{{{scenario_title}}} (Probability: {probability:.0f}\\%):\\\\\n")
+                    f.write(f"\\textit{{{scenario_data.get('description', 'No description available')}}}\\\\\n")
+                    f.write(f"Expected MAE: {expected_mae:.2f} p.p., Priority: {priority.title()}\n\n")
+        
+        # Quantitative Summary
+        quant_summary = overall_assessment.get('quantitative_summary', {})
+        if quant_summary:
+            f.write("\\subsection{Key Quantitative Insights}\n")
+            f.write("\\begin{itemize}\n")
+            f.write(f"\\item Bias magnitude: {quant_summary.get('bias_magnitude', 0):.2f} percentage points\n")
+            f.write(f"\\item Efficiency loss: {quant_summary.get('efficiency_loss', 0):.1f}\\% of variation unexplained\n")
+            f.write(f"\\item Predictable error component: {quant_summary.get('predictable_error_pct', 0):.1f}\\% of total error\n")
+            f.write("\\end{itemize}\n\n")
     
     @staticmethod
     def _write_latex_policy_implications(f, results: Dict) -> None:
-        """Write LaTeX policy implications section"""
-        f.write("\\section{Policy Implications}\n\n")
+        """Write enhanced LaTeX policy implications section with quantitative backing"""
+        f.write("\\section{Enhanced Policy Implications}\n\n")
+        f.write("Following 2024 forecast evaluation standards with quantitative evidence-based recommendations.\n\n")
         
         econ_interp = results.get("economic_interpretation", {})
         policy_impl = econ_interp.get("policy_implications", {})
+        scenario_analysis = econ_interp.get("scenario_analysis", {})
         
         if not policy_impl:
             f.write("Policy implications not available.\n\n")
             return
         
-        # Central Bank
+        # Central Bank with Quantitative Targets
         if "central_bank" in policy_impl:
             f.write("\\subsection{For Central Bank Policymakers}\n")
+            f.write("\\textbf{Quantitative Evidence-Based Recommendations:}\n\n")
             f.write("\\begin{itemize}\n")
             for implication in policy_impl["central_bank"]:
                 f.write(f"\\item {implication}\n")
             f.write("\\end{itemize}\n\n")
+            
+            # Add specific targets if available
+            bias_analysis = econ_interp.get("bias_analysis", {})
+            efficiency_analysis = econ_interp.get("efficiency_analysis", {})
+            if bias_analysis or efficiency_analysis:
+                f.write("\\textbf{Specific Performance Targets:}\n")
+                f.write("\\begin{itemize}\n")
+                if bias_analysis:
+                    magnitude = bias_analysis.get('magnitude_pp', 0)
+                    target_reduction = max(magnitude * 0.7, 0.5)  # 70% reduction or 0.5 p.p. minimum
+                    f.write(f"\\item Reduce systematic bias from {magnitude:.2f} to <{target_reduction:.2f} percentage points within 24 months\n")
+                
+                if efficiency_analysis:
+                    ljung_box = efficiency_analysis.get('ljung_box_statistic', 0)
+                    if ljung_box > 20:
+                        f.write(f"\\item Improve efficiency from current LB statistic of {ljung_box:.0f} to <20 within 18 months\n")
+                f.write("\\end{itemize}\n\n")
         
-        # Market Participants
+        # Market Participants with Quantitative Opportunities
         if "market_participants" in policy_impl:
             f.write("\\subsection{For Market Participants}\n")
+            f.write("\\textbf{Quantified Market Opportunities:}\n\n")
             f.write("\\begin{itemize}\n")
             for implication in policy_impl["market_participants"]:
                 f.write(f"\\item {implication}\n")
             f.write("\\end{itemize}\n\n")
+            
+            # Add risk assessment
+            overall_assessment = econ_interp.get("overall_assessment", {})
+            quality_score = overall_assessment.get('forecast_quality_score', 0)
+            rmse = overall_assessment.get('rmse', 0)
+            
+            f.write("\\textbf{Risk-Return Assessment:}\n")
+            f.write("\\begin{itemize}\n")
+            f.write(f"\\item Strategy Risk Level: {'High' if quality_score < 50 else 'Moderate' if quality_score < 70 else 'Low'} (Quality Score: {quality_score:.1f}/100)\n")
+            f.write(f"\\item Expected Volatility: {rmse:.2f} percentage points RMSE\n")
+            if quality_score < 50:
+                f.write("\\item \\textcolor{academicred}{WARNING: Very poor forecast quality increases strategy risk}\n")
+            f.write("\\end{itemize}\n\n")
         
-        # Researchers
+        # Researchers with Model Specifications
         if "researchers" in policy_impl:
             f.write("\\subsection{For Researchers}\n")
+            f.write("\\textbf{Research Priorities with Statistical Evidence:}\n\n")
             f.write("\\begin{itemize}\n")
             for implication in policy_impl["researchers"]:
                 f.write(f"\\item {implication}\n")
             f.write("\\end{itemize}\n\n")
+            
+            # Add model recommendations
+            coeff_interp = econ_interp.get("coefficient_interpretation", {})
+            if coeff_interp:
+                alpha_val = coeff_interp.get('alpha_value', 0)
+                beta_val = coeff_interp.get('beta_value', 0)
+                
+                f.write("\\textbf{Model Development Priorities:}\n")
+                f.write("\\begin{itemize}\n")
+                
+                if beta_val < 0:
+                    f.write("\\item \\textbf{URGENT:} Investigate counter-intuitive negative $\\beta$ coefficient - suggests fundamental model misspecification\n")
+                elif beta_val < 0.5:
+                    f.write("\\item Develop models explaining severe under-response to information ($\\beta$ = {:.3f})\n".format(beta_val))
+                
+                if abs(alpha_val) > 1.0:
+                    f.write("\\item Model systematic bias component ({:.2f} p.p.) - consider regime-switching or time-varying parameter models\n".format(abs(alpha_val)))
+                
+                overall_r2 = overall_assessment.get('r_squared', 0)
+                if overall_r2 < 0.1:
+                    f.write("\\item Low explanatory power (R² = {:.3f}) suggests need for alternative theoretical frameworks\n".format(overall_r2))
+                
+                f.write("\\end{itemize}\n\n")
+        
+        # Scenario-Based Implementation Strategy
+        if scenario_analysis:
+            f.write("\\subsection{Scenario-Based Implementation Strategy}\n")
+            f.write("\\textbf{Recommended approach based on probabilistic scenarios:}\n\n")
+            
+            # Sort scenarios by probability
+            scenario_items = list(scenario_analysis.items())
+            scenario_items.sort(key=lambda x: x[1].get('probability', 0), reverse=True)
+            
+            f.write("\\begin{enumerate}\n")
+            for scenario_name, scenario_data in scenario_items:
+                if isinstance(scenario_data, dict):
+                    scenario_title = scenario_name.replace('_', ' ').title()
+                    probability = scenario_data.get('probability', 0) * 100
+                    priority = scenario_data.get('policy_priority', 'unknown')
+                    
+                    f.write(f"\\item \\textbf{{{scenario_title}}} ({probability:.0f}\\% probability):\n")
+                    f.write(f"Priority Level: {priority.title()}\n")
+                    
+                    actions = scenario_data.get('specific_actions', [])
+                    if actions:
+                        f.write("\\begin{itemize}\n")
+                        for action in actions:
+                            f.write(f"\\item {action}\n")
+                        f.write("\\end{itemize}\n")
+            f.write("\\end{enumerate}\n\n")
+            
+        # Implementation Timeline
+        f.write("\\subsection{Recommended Implementation Timeline}\n")
+        f.write("\\textbf{Evidence-based priority sequence:}\n\n")
+        f.write("\\begin{description}\n")
+        f.write("\\item[Immediate (0-6 months):] Address most severe biases and communication failures\n")
+        f.write("\\item[Short-term (6-18 months):] Implement efficiency improvements and forecaster training\n")
+        f.write("\\item[Medium-term (18-36 months):] Monitor improvements and adjust strategies based on scenario outcomes\n")
+        f.write("\\item[Long-term (36+ months):] Evaluate fundamental model changes if improvements insufficient\n")
+        f.write("\\end{description}\n\n")

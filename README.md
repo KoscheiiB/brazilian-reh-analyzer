@@ -1,4 +1,4 @@
-# Brazilian REH Analyzer 🇧🇷📈
+# Brazilian REH Analyzer
 
 **v2.0.0 Enhanced Academic Framework for Brazilian Inflation Forecast Rationality**
 
@@ -9,35 +9,49 @@ A comprehensive, **publication-quality academic research framework** for assessi
 [![Status](https://img.shields.io/badge/status-v2.0.0_academic-brightgreen.svg)]()
 [![Analysis](https://img.shields.io/badge/analysis-REH-orange.svg)]()
 
-## 🎯 Overview
+## Overview
 
 This tool provides automated, reproducible analysis of Brazilian inflation forecast rationality using real-time data from the Central Bank of Brazil (BCB). It implements advanced econometric methodologies with comprehensive economic interpretation, making it suitable for academic research, policy analysis, and investment strategy development.
 
-### 🌟 v2.0.0 Enhanced Key Features
+### v2.0.0 Enhanced Key Features
 
-- **🔗 Direct BCB Integration**: Seamless data fetching from SGS and Expectations APIs
-- **🧠 Advanced REH Analysis**: Comprehensive rationality testing with rich economic interpretation
-- **📊 Rich Descriptive Statistics**: Detailed statistical tables with skewness, kurtosis, and distribution analysis  
-- **🔍 Automatic Structural Break Detection**: Dynamic sub-period identification adapting to any time period
-- **📈 Enhanced Mincer-Zarnowitz Analysis**: Full regression output with 95% confidence intervals and residual analysis
-- **🎯 Rolling Window Analysis**: Time-varying bias detection with professional color-corrected visualizations
-- **📋 ACF/PACF Autocorrelation Analysis**: Professional econometric diagnostic plots with significance testing
-- **📐 Q-Q Normality Testing**: Enhanced plots with confidence bands and multiple statistical tests
-- **💡 Economic Interpretation Engine**: Automated generation of policy implications and economic significance assessment
-- **📝 LaTeX Academic Export**: Professional publication-ready reports with mathematical equations and structured tables
-- **🎨 Academic Color Scheme**: Colorblind-friendly professional palette for publication-quality figures
-- **🚀 Smart Caching**: Persistent data storage with organized directory structures (results/, plots/, data/, cache/)
-- **📈 Publication-Quality Visualizations**: Journal-ready plots with academic styling and high-DPI export
-- **🇧🇷 Brazilian Context**: Handles institutional nuances, crisis periods, and monetary regime changes
-- **⚡ Rate-Limited API Access**: Respectful data fetching with automatic retry logic
-- **🔬 Batch Processing**: Multiple period analysis with comparative reporting capabilities
+- **Direct BCB Integration**: Seamless data fetching from SGS and Expectations APIs
+- **Advanced REH Analysis**: Comprehensive rationality testing with rich economic interpretation
+- **Rich Descriptive Statistics**: Detailed statistical tables with skewness, kurtosis, and distribution analysis
+- **Automatic Structural Break Detection**: Dynamic sub-period identification adapting to any time period
+- **Enhanced Mincer-Zarnowitz Analysis**: Full regression output with 95% confidence intervals and residual analysis
+- **Rolling Window Analysis**: Time-varying bias detection with professional color-corrected visualizations
+- **ACF/PACF Autocorrelation Analysis**: Professional econometric diagnostic plots with significance testing
+- **Q-Q Normality Testing**: Enhanced plots with confidence bands and multiple statistical tests
+- **Economic Interpretation Engine**: Automated generation of policy implications and economic significance assessment
+- **LaTeX Academic Export**: Professional publication-ready reports with mathematical equations and structured tables
+- **Academic Color Scheme**: Colorblind-friendly professional palette for publication-quality figures
+- **Smart Caching**: Persistent data storage with organized directory structures (results/, plots/, data/, cache/)
+- **Publication-Quality Visualizations**: Journal-ready plots with academic styling and high-DPI export
+- **Brazilian Context**: Handles institutional nuances, crisis periods, and monetary regime changes
+- **Rate-Limited API Access**: Respectful data fetching with automatic retry logic
+- **Batch Processing**: Multiple period analysis with comparative reporting capabilities
 
-## 🏛️ Academic Context
+## Academic Context
 
 This project implements the methodology described in:
 
 > **"Assessment of the Rationality of Focus Bulletin Inflation Forecasts for the 12-Month Ahead IPCA (January 2017 – April 2025)"**
 > *Analysis of Brazilian Central Bank Focus Survey Data*
+
+### Methodological Foundation
+
+The analysis is based on the seminal work of Mincer and Zarnowitz (1969) on rational expectations testing. The core Mincer-Zarnowitz regression framework is documented in:
+
+> **Mincer, J., & Zarnowitz, V. (1969). The Evaluation of Economic Forecasts.** *National Bureau of Economic Research*
+> Available in: [`docs/mincer_zarnowitz_1969_rational_expectations_test.pdf`](docs/mincer_zarnowitz_1969_rational_expectations_test.pdf)
+
+### Project Motivation
+
+This project was inspired by the comprehensive research study:
+
+> **AI Gemini Deep Research (by request of José Luis Oreiro). (2025, May 9). Assessment of the Rationality of Focus Bulletin Inflation Forecasts for the 12-Month Ahead IPCA (January 2017 – April 2025).** *José Luis Oreiro's Blog*
+> Available at: https://jlcoreiro.wordpress.com/2025/05/09/assessment-of-the-rationality-of-focus-bulletin-inflation-forecasts-for-the-12-month-ahead-ipca-january-2017-april-2025/
 
 The tool addresses critical questions in Brazilian monetary policy:
 - Are market inflation expectations rational according to REH?
@@ -45,7 +59,7 @@ The tool addresses critical questions in Brazilian monetary policy:
 - How do structural breaks affect forecast efficiency?
 - What institutional factors influence expectation formation?
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -77,7 +91,7 @@ analyzer = BrazilianREHAnalyzer(
 results = analyzer.comprehensive_analysis()
 
 # Display key findings from enhanced v2.0.0 output
-print(f"Overall Rational: {'✓' if results['rationality_assessment']['overall_rational'] else '✗'}")
+print(f"Overall Rational: {'PASS' if results['rationality_assessment']['overall_rational'] else 'FAIL'}")
 print(f"Mean Forecast Error: {results['descriptive_stats']['error_mean']:.3f} p.p.")
 print(f"Bias Severity: {results['economic_interpretation']['bias_analysis']['severity']}")
 print(f"Sub-periods Detected: {len(results['sub_period_analysis'])}")
@@ -88,7 +102,7 @@ analyzer.plot_enhanced_diagnostics()
 # Export comprehensive text analysis
 analyzer.export_results_summary("path/to/your/results/enhanced_analysis.txt")
 
-# 🆕 Export professional LaTeX report for academic publication
+# Export  LaTeX report
 analyzer.export_latex_report(
     "path/to/your/results/academic_report.tex",
     "Brazilian Focus Bulletin Rationality Assessment (2017-2024)",
@@ -98,7 +112,7 @@ analyzer.export_latex_report(
 
 ### Command Line Interface - Enhanced
 
-#### 🚀 **Comprehensive Analysis with Organized Output**
+#### **Comprehensive Analysis with Organized Output**
 
 ```bash
 # Create organized output structure and run full analysis
@@ -117,13 +131,13 @@ python -m brazilian_reh_analyzer \
     --verbose
 ```
 
-#### 📊 **Quick Analysis Examples**
+#### **Quick Analysis Examples**
 
 ```bash
 # Default analysis (2017-2024)
 python -m brazilian_reh_analyzer
 
-# Custom period analysis  
+# Custom period analysis
 python -m brazilian_reh_analyzer --start-date 2020-01-01 --end-date 2022-12-31
 
 # Force refresh data (ignore cache)
@@ -137,7 +151,7 @@ python -m brazilian_reh_analyzer --start-date 2020-03-01 --end-date 2021-12-31 \
     --export-summary --summary-file covid_impact_analysis.txt
 ```
 
-#### 🎯 **Batch Processing for Multiple Periods**
+#### **Batch Processing for Multiple Periods**
 
 ```bash
 #!/bin/bash
@@ -152,7 +166,7 @@ python -m brazilian_reh_analyzer \
     --export-plots --output-dir path/to/your/output/pre_covid_plots/ \
     --no-plots --quiet
 
-# COVID Period Analysis  
+# COVID Period Analysis
 python -m brazilian_reh_analyzer \
     --start-date 2020-03-01 --end-date 2022-12-31 \
     --export-summary --summary-file path/to/your/output/covid_analysis.txt \
@@ -169,17 +183,17 @@ python -m brazilian_reh_analyzer \
 echo "Analysis completed! Check your output directory."
 ```
 
-## 📊 Enhanced Analysis Results
+## Enhanced Analysis Results
 
 The framework now generates **comprehensive, academic-quality output** with rich economic interpretation:
 
-### 🎯 Executive Summary Format
+### Executive Summary Format
 ```
 ╔════════════════════════════════════════════════════════════════════╗
 ║      BRAZILIAN REH ANALYZER - COMPREHENSIVE ECONOMIC ANALYSIS      ║
 ╚════════════════════════════════════════════════════════════════════╝
 
-OVERALL ASSESSMENT: ❌ Forecasts VIOLATE Rational Expectations Hypothesis
+OVERALL ASSESSMENT: FAIL - Forecasts VIOLATE Rational Expectations Hypothesis
 
 • Analysis Period: 2017-01-02 to 2024-06-28 (7.5 years)
 • Systematic OVERESTIMATION: -3.805 p.p. mean error
@@ -188,7 +202,7 @@ OVERALL ASSESSMENT: ❌ Forecasts VIOLATE Rational Expectations Hypothesis
 • Sub-periods Analyzed: 3 (with substantial time-variation)
 ```
 
-### 📊 Rich Descriptive Statistics Table
+### Rich Descriptive Statistics Table
 ```
                    ┌───────────────┬────────────────┬────────────────┐
                    │ Observed IPCA │ Focus Forecast │ Forecast Error │
@@ -205,7 +219,7 @@ Observations       │       1878    │        1878    │        1878    │
 ───────────────────┴───────────────┴────────────────┴────────────────┘
 ```
 
-### 📈 Detailed Mincer-Zarnowitz Regression Analysis
+### Detailed Mincer-Zarnowitz Regression Analysis
 ```
 Regression: Realized = α + β × Forecast + ε
 Null Hypothesis: H₀: α = 0, β = 1 (rational expectations)
@@ -219,17 +233,17 @@ R² = 0.0388    │    F-statistic = 85,672.94    │    REJECT H₀
 
 ECONOMIC INTERPRETATION:
 • α = 0.874 ≠ 0: Systematic forecast bias present
-• β = -0.103 ≠ 1: Forecasters under-respond to their own predictions  
+• β = -0.103 ≠ 1: Forecasters under-respond to their own predictions
 • Joint test rejection indicates violations of both unbiasedness AND efficiency
 ```
 
-### 🔍 Sub-Period Analysis (Automatic Structural Break Detection)
+### Sub-Period Analysis (Automatic Structural Break Detection)
 ```
                    │  Period  │   Period   │ Mean Error │ REH Status │
                    │  Start   │    End     │    (p.p.)  │  Overall   │
 ───────────────────┼──────────┼────────────┼────────────┼────────────┤
 Period 1          │  2017-01 │    2019-07 │     -3.799 │    FAIL    │
-Period 2          │  2019-07 │    2021-12 │     -3.265 │    FAIL    │  
+Period 2          │  2019-07 │    2021-12 │     -3.265 │    FAIL    │
 Period 3          │  2021-12 │    2024-06 │     -4.349 │    FAIL    │
 
 STRUCTURAL BREAK INTERPRETATION:
@@ -238,11 +252,11 @@ STRUCTURAL BREAK INTERPRETATION:
 • Worsening performance in most recent period
 ```
 
-### 💡 Economic Interpretation & Policy Implications
+### Economic Interpretation & Policy Implications
 ```
 BIAS ANALYSIS:
 • Direction: OVERESTIMATION
-• Magnitude: 3.805 percentage points  
+• Magnitude: 3.805 percentage points
 • Severity: SEVERE
 • Economic Significance: HIGH
 
@@ -251,7 +265,7 @@ FOR CENTRAL BANK POLICYMAKERS:
 • Market expectations exhibit extreme autocorrelation
 • Consider enhanced communication strategies
 
-FOR MARKET PARTICIPANTS:  
+FOR MARKET PARTICIPANTS:
 • Systematic biases present contrarian opportunities
 • Forecast errors are predictable, violating efficiency
 • Alternative forecasting models recommended
@@ -262,7 +276,7 @@ FOR RESEARCHERS:
 • Structural breaks warrant further investigation
 ```
 
-## 📁 Data Sources
+## Data Sources
 
 ### Primary Data
 - **IPCA (Realized Inflation)**: BCB SGS series 433 (12-month accumulated)
@@ -277,9 +291,9 @@ FOR RESEARCHERS:
 - [BCB SGS API](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do)
 - [BCB Expectations API](https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/documentacao)
 
-## 🔬 Enhanced Methodology
+## Enhanced Methodology
 
-### 📊 Comprehensive Statistical Analysis Framework
+### Comprehensive Statistical Analysis Framework
 
 #### 1. **Rich Descriptive Statistics**
 - **Comprehensive Distribution Analysis**: Mean, median, standard deviation, skewness, kurtosis
@@ -296,7 +310,7 @@ H₀: (α, β) = (0, 1)
 ```
 - Full regression diagnostics with confidence intervals
 - Individual coefficient significance tests
-- Joint hypothesis testing with F-statistics  
+- Joint hypothesis testing with F-statistics
 - Economic interpretation of coefficient deviations
 
 **Comprehensive Autocorrelation Analysis**
@@ -324,7 +338,7 @@ H₀: (α, β) = (0, 1)
 - Minimum segment size requirements for robust analysis
 - Dynamic period identification (works with any date range)
 
-**Sub-Period Analysis**  
+**Sub-Period Analysis**
 - Individual REH testing for each detected period
 - Cross-period bias comparison and evolution analysis
 - Structural break economic interpretation
@@ -357,7 +371,7 @@ H₀: (α, β) = (0, 1)
 - Academic research direction suggestions
 - Investment strategy insights for systematic bias exploitation
 
-### 🇧🇷 Enhanced Brazilian Context Features
+### Enhanced Brazilian Context Features
 
 - **Institutional Integration**: Complete BCB API integration with rate limiting
 - **Crisis Period Modeling**: Automatic detection of major economic disruptions
@@ -365,7 +379,7 @@ H₀: (α, β) = (0, 1)
 - **Monetary Regime Awareness**: Policy regime change detection and analysis
 - **Real-Time Data Handling**: Latest available data integration with proper alignment
 
-## 📈 Visualization Gallery
+## Visualization Gallery
 
 The tool generates publication-quality plots including:
 
@@ -376,16 +390,16 @@ The tool generates publication-quality plots including:
 - **Rolling Statistics**: Dynamic bias pattern analysis
 - **Structural Break Charts**: Major economic event impacts
 
-## 🛠️ Advanced Usage - Enhanced Framework
+## Advanced Usage - Enhanced Framework
 
-### 🎯 **Enhanced Analysis with Rich Output**
+### **Enhanced Analysis with Rich Output**
 
 ```python
 from brazilian_reh_analyzer import BrazilianREHAnalyzer
 
 # Initialize with custom cache directory and date range
 analyzer = BrazilianREHAnalyzer(
-    start_date='2020-01-01', 
+    start_date='2020-01-01',
     end_date='2023-12-31',
     cache_dir='path/to/your/custom_cache/'
 )
@@ -413,7 +427,7 @@ print(f"Economic Significance: {bias_analysis['economic_significance']}")
 analyzer.export_results_summary('path/to/your/output/comprehensive_analysis.txt')
 ```
 
-### 🔍 **Structural Break Analysis**
+### **Structural Break Analysis**
 
 ```python
 # Analyze periods with automatic structural break detection
@@ -439,7 +453,7 @@ print(f"Rolling Window Size: {rolling_analysis['window_size']} observations")
 print(f"Max Bias Detected: {rolling_analysis['max_abs_bias']:.3f} p.p.")
 ```
 
-### 📊 **Detailed Statistical Analysis**
+### **Detailed Statistical Analysis**
 
 ```python
 # Access detailed Mincer-Zarnowitz regression results
@@ -454,12 +468,12 @@ print(f"R²: {detailed_mz['r_squared']:.4f}")
 
 # Check economic significance
 if detailed_mz['alpha_significant']:
-    print("⚠️  Significant systematic bias detected (α ≠ 0)")
+    print("WARNING: Significant systematic bias detected (α ≠ 0)")
 if detailed_mz['beta_significantly_different_from_1']:
-    print("⚠️  Forecasters under/over-respond to their own predictions")
+    print("WARNING: Forecasters under/over-respond to their own predictions")
 ```
 
-### 🎯 **Event Study Analysis**
+### **Event Study Analysis**
 
 ```python
 # Analyze specific economic events
@@ -473,26 +487,26 @@ event_studies = {
 for event_name, (start, end) in event_studies.items():
     print(f"\n=== {event_name} Analysis ===")
     analyzer = BrazilianREHAnalyzer(start, end)
-    
+
     try:
         results = analyzer.comprehensive_analysis()
-        
+
         # Extract key metrics
         desc_stats = results['descriptive_stats']
         econ_interp = results['economic_interpretation']
-        
+
         print(f"Mean Error: {desc_stats['error_mean']:.3f} p.p.")
         print(f"Bias Severity: {econ_interp['bias_analysis']['severity']}")
         print(f"REH Compatible: {results['rationality_assessment']['overall_rational']}")
-        
+
         # Export event-specific results
         analyzer.export_results_summary(f'path/to/your/output/{event_name}_analysis.txt')
-        
+
     except Exception as e:
         print(f"Analysis failed for {event_name}: {e}")
 ```
 
-### 📁 **Batch Processing with Organized Output**
+### **Batch Processing with Organized Output**
 
 ```python
 import os
@@ -501,7 +515,7 @@ from pathlib import Path
 # Define analysis periods
 analysis_periods = {
     'Pre_COVID': ('2017-01-01', '2020-02-29'),
-    'COVID_Era': ('2020-03-01', '2022-12-31'), 
+    'COVID_Era': ('2020-03-01', '2022-12-31'),
     'Post_COVID': ('2023-01-01', '2025-07-01'),
     'Full_Period': ('2017-01-01', '2025-07-01')
 }
@@ -518,59 +532,59 @@ batch_results = {}
 
 for period_name, (start_date, end_date) in analysis_periods.items():
     print(f"\n🔄 Processing {period_name}...")
-    
+
     # Initialize analyzer with period-specific cache
     analyzer = BrazilianREHAnalyzer(
         start_date=start_date,
         end_date=end_date,
         cache_dir=str(base_output_dir / period_name / 'cache')
     )
-    
+
     try:
         # Run comprehensive analysis
         results = analyzer.comprehensive_analysis()
         batch_results[period_name] = results
-        
+
         # Export all outputs to organized directories
         period_output = base_output_dir / period_name
-        
+
         # Export comprehensive summary
         analyzer.export_results_summary(
             str(period_output / 'results' / f'{period_name}_comprehensive_analysis.txt')
         )
-        
+
         # Export plots
         analyzer.export_plots(
             output_dir=str(period_output / 'plots'),
             dpi=300
         )
-        
+
         # Save raw data
         analyzer.save_data(
             str(period_output / 'data' / f'{period_name}_aligned_data.csv')
         )
-        
-        print(f"✅ {period_name} completed successfully")
-        
+
+        print(f"SUCCESS: {period_name} completed successfully")
+
     except Exception as e:
-        print(f"❌ {period_name} failed: {e}")
+        print(f"FAILED: {period_name} failed: {e}")
 
 # Generate comparative summary
-print("\n📊 COMPARATIVE ANALYSIS SUMMARY")
+print("\nCOMPARATIVE ANALYSIS SUMMARY")
 print("=" * 70)
 
 for period_name, results in batch_results.items():
     if 'economic_interpretation' in results:
         econ_interp = results['economic_interpretation']
         bias_analysis = econ_interp['bias_analysis']
-        
+
         print(f"{period_name:15} | "
               f"Error: {results['descriptive_stats']['error_mean']:6.3f} p.p. | "
               f"Severity: {bias_analysis['severity']:12} | "
               f"REH: {'PASS' if results['rationality_assessment']['overall_rational'] else 'FAIL'}")
 ```
 
-### 🔗 **External Variables Integration**
+### **External Variables Integration**
 
 ```python
 # Add external macroeconomic variables for enhanced orthogonality testing
@@ -592,7 +606,7 @@ results = analyzer.comprehensive_analysis(external_vars=external_data)
 # and provide enhanced interpretation of information efficiency violations
 ```
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 brazilian-reh-analyzer/
@@ -617,7 +631,7 @@ brazilian-reh-analyzer/
 └── README.md
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run full test suite
@@ -630,7 +644,7 @@ pytest --cov=brazilian_reh_analyzer tests/
 pytest tests/test_statistical_tests.py -v
 ```
 
-## 📚 Dependencies
+## Dependencies
 
 ### Core Requirements
 - `pandas >= 1.5.0` - Data manipulation and analysis
@@ -647,7 +661,7 @@ pytest tests/test_statistical_tests.py -v
 - `jupyter >= 1.0.0` - Interactive analysis notebooks
 - `plotly >= 5.0.0` - Interactive visualizations
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from the research community! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
@@ -675,17 +689,17 @@ pytest tests/
 - **Documentation**: Improvements to methodology explanations or examples
 - **Code**: Implementation of new features or performance improvements
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support & Contact
+## Support & Contact
 
 - **Issues**: [GitHub Issues](https://github.com/KoscheiiB/brazilian-reh-analyzer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/KoscheiiB/brazilian-reh-analyzer/discussions)
 - **Email**: KoscheiiB@users.noreply.github.com
 
-## 🎓 Citation
+## Citation
 
 If you use this tool in your research, please cite:
 
@@ -698,21 +712,21 @@ If you use this tool in your research, please cite:
 }
 ```
 
-## 🔄 Changelog
+## Changelog
 
 ### v2.0.0 - Enhanced Academic Framework (2025-07-22)
-**🎉 Major Release: Publication-Quality Academic Research Framework**
+**Major Release: Academic Quality Research Framework**
 
-#### 🎨 **Visual Enhancements**
+#### **Visual Enhancements**
 - **NEW:** Professional academic color scheme (colorblind-friendly palette)
 - **FIXED:** Rolling statistics hard-to-see light blue color issue
 - **NEW:** Enhanced Mincer-Zarnowitz plots with 95% confidence intervals
 - **NEW:** Q-Q plots with confidence bands for normality testing
 - **NEW:** ACF/PACF autocorrelation analysis plots (replaces basic summary table)
-- **NEW:** Academic journal-quality styling with serif fonts
+- **NEW:** Academic quality styling with serif fonts
 - **NEW:** High-DPI export ready (300 DPI default)
 
-#### 📊 **Enhanced Statistical Analysis**
+#### **Enhanced Statistical Analysis**
 - **NEW:** Rich descriptive statistics with skewness, kurtosis, and quartile analysis
 - **NEW:** Automatic structural break detection with dynamic sub-period identification
 - **NEW:** Detailed Mincer-Zarnowitz regression with full diagnostics and confidence intervals
@@ -720,21 +734,21 @@ If you use this tool in your research, please cite:
 - **NEW:** Comprehensive autocorrelation analysis (ACF/PACF) with significance testing
 - **NEW:** Enhanced normality testing with multiple statistical tests
 
-#### 🧠 **Economic Intelligence**
+#### **Economic Intelligence**
 - **NEW:** Economic interpretation engine with automated significance assessment
 - **NEW:** Policy implications generator for Central Bank, markets, and researchers
 - **NEW:** Bias severity classification (minimal/moderate/substantial/severe)
 - **NEW:** Learning failure identification based on autocorrelation patterns
 - **NEW:** Crisis period and regime change detection
 
-#### 📝 **Academic Output Formats**
-- **NEW:** LaTeX report export for academic publication (`export_latex_report()`)
+#### **Academic Output Formats**
+- **NEW:** LaTeX report export (`export_latex_report()`)
 - **NEW:** Professional tables with booktabs styling
 - **NEW:** Mathematical equations in proper LaTeX format
 - **NEW:** Structured academic sections with colored status indicators
 - **ENHANCED:** Comprehensive text reports with rich economic interpretation
 
-#### 🔬 **Technical Improvements**
+#### **Technical Improvements**
 - **NEW:** Scikit-learn integration for advanced statistical methods
 - **NEW:** Enhanced caching system for better performance
 - **NEW:** Organized output directory structure (results/, plots/, data/, cache/)
@@ -742,28 +756,28 @@ If you use this tool in your research, please cite:
 - **NEW:** Individual high-resolution plot exports for publication
 - **ENHANCED:** Error handling and validation throughout framework
 
-#### 🎯 **User Experience**  
+#### **User Experience**
 - **NEW:** Enhanced CLI with comprehensive output organization
 - **NEW:** Academic-style progress reporting and validation
 - **NEW:** Detailed usage examples for event studies and batch processing
 - **NEW:** Interactive analysis capabilities with rich return structures
 - **ENHANCED:** Documentation with academic methodological explanations
 
-### v1.0.0 - Core Framework (2025-01-15)
-- ✅ Initial release with core REH testing functionality
-- ✅ BCB API integration with intelligent caching
-- ✅ Basic publication-quality visualizations  
-- ✅ Comprehensive documentation and examples
-- ✅ Command-line interface implementation
-- ✅ Organized project structure with testing framework
+### v1.0.0 - Core Framework
+- Initial release with core REH testing functionality
+- BCB API integration with intelligent caching
+- Basic publication-quality visualizations
+- Comprehensive documentation and examples
+- Command-line interface implementation
+- Organized project structure with testing framework
 
-### v0.1.0 - Foundation (2024-12-20) 
-- ✅ Basic data fetching and alignment from BCB APIs
-- ✅ Initial econometric test implementations (Mincer-Zarnowitz, bias tests)
-- ✅ Prototype visualization system
-- ✅ Project structure and development environment setup
+### v0.1.0 - Foundation
+- Basic data fetching and alignment from BCB APIs
+- Initial econometric test implementations (Mincer-Zarnowitz, bias tests)
+- Prototype visualization system
+- Project structure and development environment setup
 
-## 🌟 Acknowledgments
+## Acknowledgments
 
 - **Brazilian Central Bank** for providing open access to economic data APIs
 - **Jose Luis Oreiro** for the foundational academic analysis
@@ -772,4 +786,4 @@ If you use this tool in your research, please cite:
 
 ---
 
-**Made with ❤️ for Brazilian Economic Research**
+**Made for Brazilian Economic Research**
