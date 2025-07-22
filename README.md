@@ -298,7 +298,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/KoscheiiB/brazilian-reh-analyzer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/KoscheiiB/brazilian-reh-analyzer/discussions)
-- **Email**: your.email@domain.com
+- **Email**: KoscheiiB@users.noreply.github.com
 
 ## 🎓 Citation
 
