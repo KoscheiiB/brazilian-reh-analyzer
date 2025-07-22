@@ -1,0 +1,338 @@
+# Brazilian REH Analyzer 🇧🇷📈
+
+A comprehensive econometric analysis tool for assessing the rationality of Brazil's Focus Bulletin inflation forecasts according to the Rational Expectations Hypothesis (REH).
+
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-development-orange.svg)]()
+
+## 🎯 Overview
+
+This tool provides automated, reproducible analysis of Brazilian inflation forecast rationality using real-time data from the Central Bank of Brazil (BCB). It implements standard econometric tests from the academic literature while handling the complexities of Brazilian institutional data.
+
+### Key Features
+
+- **🔗 Direct BCB Integration**: Seamless data fetching from SGS and Expectations APIs
+- **📊 Comprehensive REH Testing**: Complete suite of rationality tests (Mincer-Zarnowitz, Ljung-Box, etc.)
+- **🚀 Smart Caching**: Persistent data storage to avoid repeated API calls
+- **📈 Publication-Quality Visualizations**: Academic-ready plots and statistical summaries
+- **🇧🇷 Brazilian Context**: Handles institutional nuances and structural breaks
+- **⚡ Rate-Limited API Access**: Respectful data fetching with automatic retry logic
+
+## 🏛️ Academic Context
+
+This project implements the methodology described in:
+
+> **"Assessment of the Rationality of Focus Bulletin Inflation Forecasts for the 12-Month Ahead IPCA (January 2017 – April 2025)"**
+> *Analysis of Brazilian Central Bank Focus Survey Data*
+
+The tool addresses critical questions in Brazilian monetary policy:
+- Are market inflation expectations rational according to REH?
+- Do Focus Bulletin forecasts exhibit systematic biases?
+- How do structural breaks affect forecast efficiency?
+- What institutional factors influence expectation formation?
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/brazilian-reh-analyzer.git
+cd brazilian-reh-analyzer
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Basic Usage
+
+```python
+from brazilian_reh_analyzer import BrazilianREHAnalyzer
+
+# Initialize analyzer
+analyzer = BrazilianREHAnalyzer(
+    start_date='2017-01-01',
+    end_date='2024-12-31'
+)
+
+# Run comprehensive analysis (uses cached data when available)
+results = analyzer.comprehensive_analysis()
+
+# Display results
+print(f"Overall Rational: {'✓' if results['rationality_assessment']['overall_rational'] else '✗'}")
+print(f"Mean Forecast Error: {results['descriptive_stats']['error_mean']:.3f} p.p.")
+
+# Generate diagnostic plots
+analyzer.plot_enhanced_diagnostics()
+
+# Export results for academic use
+analyzer.export_results_summary("analysis_results.txt")
+```
+
+### Command Line Interface
+
+```bash
+# Run analysis for specific period
+python -m brazilian_reh_analyzer --start-date 2017-01-01 --end-date 2024-12-31
+
+# Force refresh data (ignore cache)
+python -m brazilian_reh_analyzer --force-refresh
+
+# Export LaTeX tables
+python -m brazilian_reh_analyzer --export-latex results.tex
+```
+
+## 📊 Example Results
+
+### Rationality Assessment
+```
+RATIONAL EXPECTATIONS HYPOTHESIS ANALYSIS
+==========================================
+Analysis Period: 2017-01-02 to 2024-12-31
+Number of Observations: 1,754
+
+Rationality Tests:
+✗ Unbiased: FAIL (p-value: 0.023)
+✗ MZ Test: FAIL (p-value: 0.001)
+✗ Efficient: FAIL (autocorrelation detected)
+✗ Overall Rational: FAIL
+
+Mean Forecast Error: -0.123 p.p.
+Bias Direction: Systematic underestimation
+```
+
+### Statistical Test Details
+| Test                     | Statistic  | p-value | Result    |
+| ------------------------ | ---------- | ------- | --------- |
+| Mincer-Zarnowitz (joint) | F = 12.34  | 0.001   | Reject H₀ |
+| Ljung-Box (10 lags)      | LB = 23.45 | 0.009   | Reject H₀ |
+| Bias Test                | t = -2.14  | 0.023   | Reject H₀ |
+
+## 📁 Data Sources
+
+### Primary Data
+- **IPCA (Realized Inflation)**: BCB SGS series 433 (12-month accumulated)
+- **Focus Forecasts**: BCB Expectations API (`ExpectativasMercadoInflacao12Meses`)
+
+### Data Coverage
+- **Period**: January 2017 - Present
+- **Frequency**: Daily Focus forecasts, Monthly IPCA realizations
+- **Quality**: Minimum 10 respondents for Focus median calculations
+
+### API Documentation
+- [BCB SGS API](https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do)
+- [BCB Expectations API](https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/documentacao)
+
+## 🔬 Methodology
+
+### Econometric Tests Implemented
+
+1. **Mincer-Zarnowitz Regression**
+   ```
+   P_t = α + β · E_{t-12}[P_t] + u_t
+   H₀: (α, β) = (0, 1)
+   ```
+
+2. **Autocorrelation Tests**
+   - Ljung-Box Q-test for serial correlation
+   - Breusch-Godfrey LM test
+
+3. **Bias Testing**
+   - Holden-Peel simple bias test
+   - t-test for zero mean forecast errors
+
+4. **Orthogonality Tests**
+   - Regression on available information sets
+   - External variables: Selic rate, GDP, unemployment
+
+### Brazilian Context Features
+
+- **Structural Break Detection**: Automatic identification of regime changes
+- **Institutional Calendar**: Handles Brazilian holidays and data release schedules
+- **Crisis Period Analysis**: Special handling for 2018 election, COVID-19, etc.
+- **Forecaster Composition**: Analysis of Focus Bulletin participant effects
+
+## 📈 Visualization Gallery
+
+The tool generates publication-quality plots including:
+
+- **Forecast vs. Realization Scatter**: Assessment of forecast accuracy
+- **Error Time Series**: Temporal patterns in forecast bias
+- **Distribution Analysis**: Normality tests and outlier detection
+- **Autocorrelation Functions**: Efficiency violation identification
+- **Rolling Statistics**: Dynamic bias pattern analysis
+- **Structural Break Charts**: Major economic event impacts
+
+## 🛠️ Advanced Usage
+
+### Custom Analysis Periods
+
+```python
+# Analyze specific economic periods
+covid_analyzer = BrazilianREHAnalyzer('2020-01-01', '2021-12-31')
+election_analyzer = BrazilianREHAnalyzer('2018-01-01', '2019-06-30')
+```
+
+### External Variables Integration
+
+```python
+# Add external variables for orthogonality testing
+external_data = pd.DataFrame({
+    'selic_rate': selic_data,
+    'gdp_growth': gdp_data,
+    'unemployment': unemployment_data
+})
+
+results = analyzer.comprehensive_analysis(external_vars=external_data)
+```
+
+### Batch Processing
+
+```python
+# Analyze multiple periods
+periods = [
+    ('2017-01-01', '2018-12-31'),
+    ('2019-01-01', '2020-12-31'),
+    ('2021-01-01', '2024-12-31')
+]
+
+for start, end in periods:
+    analyzer = BrazilianREHAnalyzer(start, end)
+    results = analyzer.comprehensive_analysis()
+    print(f"Period {start}-{end}: Rational = {results['rationality_assessment']['overall_rational']}")
+```
+
+## 🏗️ Project Structure
+
+```
+brazilian-reh-analyzer/
+├── brazilian_reh_analyzer/
+│   ├── __init__.py
+│   ├── analyzer.py          # Main analysis engine
+│   ├── data_fetcher.py      # BCB API integration
+│   ├── tests.py            # Econometric tests
+│   ├── visualizations.py   # Plotting functions
+│   └── utils.py            # Utility functions
+├── tests/
+│   ├── test_analyzer.py
+│   ├── test_data_fetcher.py
+│   └── test_statistical_tests.py
+├── docs/
+│   ├── methodology.md       # Technical methodology
+│   ├── api_reference.md     # API documentation
+│   └── examples/           # Usage examples
+├── data_cache/             # Cached API data
+├── requirements.txt
+├── setup.py
+└── README.md
+```
+
+## 🧪 Testing
+
+```bash
+# Run full test suite
+pytest tests/
+
+# Run with coverage
+pytest --cov=brazilian_reh_analyzer tests/
+
+# Run specific test categories
+pytest tests/test_statistical_tests.py -v
+```
+
+## 📚 Dependencies
+
+### Core Requirements
+- `pandas >= 1.5.0` - Data manipulation and analysis
+- `numpy >= 1.21.0` - Numerical computing
+- `statsmodels >= 0.13.0` - Statistical modeling
+- `scipy >= 1.7.0` - Scientific computing
+- `python-bcb >= 0.3.0` - Brazilian Central Bank API client
+
+### Visualization
+- `matplotlib >= 3.5.0` - Plotting library
+- `seaborn >= 0.11.0` - Statistical visualizations
+
+### Optional
+- `jupyter >= 1.0.0` - Interactive analysis notebooks
+- `plotly >= 5.0.0` - Interactive visualizations
+
+## 🤝 Contributing
+
+We welcome contributions from the research community! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Setup
+
+```bash
+# Clone and setup development environment
+git clone https://github.com/yourusername/brazilian-reh-analyzer.git
+cd brazilian-reh-analyzer
+python -m venv venv
+source venv/bin/activate
+pip install -e .[dev]
+
+# Install pre-commit hooks
+pre-commit install
+
+# Run tests
+pytest tests/
+```
+
+### Types of Contributions
+
+- **Bug Reports**: Issues with data fetching, analysis, or visualizations
+- **Feature Requests**: Additional econometric tests or analysis capabilities
+- **Documentation**: Improvements to methodology explanations or examples
+- **Code**: Implementation of new features or performance improvements
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support & Contact
+
+- **Issues**: [GitHub Issues](https://github.com/KoscheiiB/brazilian-reh-analyzer/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/KoscheiiB/brazilian-reh-analyzer/discussions)
+- **Email**: your.email@domain.com
+
+## 🎓 Citation
+
+If you use this tool in your research, please cite:
+
+```bibtex
+@software{brazilian_reh_analyzer_2025,
+  author = {KoscheiiB},
+  title = {Brazilian REH Analyzer: Econometric Analysis of Focus Bulletin Forecasts},
+  url = {https://github.com/KoscheiiB/brazilian-reh-analyzer},
+  year = {2025}
+}
+```
+
+## 🔄 Changelog
+
+### v1.0.0 (Planned)
+- Initial release with core REH testing functionality
+- BCB API integration with caching
+- Publication-quality visualizations
+- Comprehensive documentation
+
+### v0.1.0 (Development)
+- Basic data fetching and alignment
+- Initial econometric test implementations
+- Prototype visualization system
+
+## 🌟 Acknowledgments
+
+- **Brazilian Central Bank** for providing open access to economic data APIs
+- **Jose Luis Oreiro** for the foundational academic analysis
+- **python-bcb** library maintainers for BCB API integration
+- **Academic community** for methodological foundations and validation
+
+---
+
+**Made with ❤️ for Brazilian Economic Research**
