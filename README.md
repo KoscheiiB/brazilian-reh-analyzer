@@ -44,7 +44,7 @@ This project implements the methodology described in:
 The analysis is based on the seminal work of Mincer and Zarnowitz (1969) on rational expectations testing. The core Mincer-Zarnowitz regression framework is documented in:
 
 > **Mincer, J., & Zarnowitz, V. (1969). The Evaluation of Economic Forecasts.** *National Bureau of Economic Research*
-> Available in the literature reference document: [`docs/references/mincer_zarnowitz_1969_rational_expectations_test/mincer_zarnowitz_1969_rational_expectations_test.pdf`](docs/reference/mincer_zarnowitz_1969_rational_expectations_test.pdf)
+> Available in the literature reference document: [`docs/references/mincer_zarnowitz_1969_rational_expectations_test.pdf`](docs/references/mincer_zarnowitz_1969_rational_expectations_test/mincer_zarnowitz_1969_rational_expectations_test.pdf)
 
 ### Project Motivation
 
